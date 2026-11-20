@@ -1,6 +1,16 @@
 {
   "version": 2,
   "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/u/:slug",
+      "destination": "/view.html?slug=:slug"
+    },
+    {
+      "source": "/u/:slug/",
+      "destination": "/view.html?slug=:slug"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
