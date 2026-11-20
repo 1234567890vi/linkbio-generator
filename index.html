@@ -572,6 +572,25 @@
               <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
             </label>
           </div>
+
+          <!-- VIP Code Redemption Box -->
+          <div class="p-3.5 rounded-xl bg-amber-500/[0.04] border border-amber-500/20 col-span-1 sm:col-span-2">
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                <i class="fa-solid fa-crown text-[10px]"></i>
+                <span>كود الـ VIP الحصري (اختياري)</span>
+              </label>
+              <span id="vipStatusBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">مُفعل VIP</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" id="inputVipCode" class="input-field text-xs uppercase font-mono tracking-wider py-1.5 flex-1" placeholder="مثال: VIP-2026-X89" />
+              <button type="button" onclick="redeemVipCode()" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 hover:brightness-110 active:scale-95 transition-all flex items-center gap-1">
+                <i class="fa-solid fa-bolt"></i>
+                <span>تفعيل</span>
+              </button>
+            </div>
+            <p id="vipRedeemMsg" class="text-[10px] mt-1 hidden"></p>
+          </div>
         </div>
 
         <!-- Bio / Description with character counter -->
@@ -1346,6 +1365,63 @@
     }
 
     /* ======================================================
+       VIP CODE REDEMPTION WITH SUPABASE
+    ====================================================== */
+    let isVipActive = false;
+
+    async function redeemVipCode() {
+      const code = document.getElementById('inputVipCode').value.trim();
+      const slug = document.getElementById('inputSlug').value.trim() || 'demo';
+      const msgEl = document.getElementById('vipRedeemMsg');
+      const badgeEl = document.getElementById('vipStatusBadge');
+
+      if (!code) {
+        showToast('يرجى إدخال كود VIP أولاً');
+        return;
+      }
+
+      msgEl.classList.remove('hidden');
+      const client = getSupabaseClient();
+      if (client) {
+        showToast('جاري التحقق من كود VIP في قاعدة البيانات...');
+        try {
+          const { data, error } = await client.rpc('redeem_vip_code', { p_code: code, p_slug: slug });
+          if (data && data.success) {
+            isVipActive = true;
+            document.getElementById('inputVerified').checked = true;
+            badgeEl.classList.remove('hidden');
+            msgEl.className = 'text-[10px] text-emerald-400 mt-1 block font-bold';
+            msgEl.textContent = data.message || 'تم تفعيل كود VIP وشارة التوثيق بنجاح!';
+            showToast('تهانينا! تم تفعيل ميزات VIP');
+            updateLivePreview();
+            onFormInputChanged();
+          } else {
+            msgEl.className = 'text-[10px] text-rose-400 mt-1 block';
+            msgEl.textContent = data?.message || 'كود VIP غير صحيح أو تم استخدامه مسبقاً';
+          }
+        } catch (e) {
+          msgEl.className = 'text-[10px] text-rose-400 mt-1 block';
+          msgEl.textContent = 'تعذر الاتصال بقاعدة البيانات للتحقق من الكود';
+        }
+      } else {
+        // Offline / Simulation check
+        if (code.toUpperCase().startsWith('VIP-')) {
+          isVipActive = true;
+          document.getElementById('inputVerified').checked = true;
+          badgeEl.classList.remove('hidden');
+          msgEl.className = 'text-[10px] text-emerald-400 mt-1 block font-bold';
+          msgEl.textContent = 'تم تفعيل كود VIP التجريبي وشارة التوثيق بنجاح!';
+          showToast('تم تفعيل مزايا VIP');
+          updateLivePreview();
+          onFormInputChanged();
+        } else {
+          msgEl.className = 'text-[10px] text-rose-400 mt-1 block';
+          msgEl.textContent = 'كود VIP غير صحيح. الأكواد الرسمية تبدأ بـ VIP-';
+        }
+      }
+    }
+
+    /* ======================================================
        SLUG AVAILABILITY CHECK WITH SUPABASE
     ====================================================== */
     function checkSlugAvailabilityDebounced() {
@@ -1525,6 +1601,8 @@
         displayName: document.getElementById('inputDisplayName').value.trim() || 'بكارة محمد عبد الجليل',
         slug: document.getElementById('inputSlug').value.trim() || 'abdeljalil',
         verified: document.getElementById('inputVerified').checked,
+        is_vip: isVipActive,
+        vip_badge: isVipActive ? 'VIP CREATOR' : null,
         bio: document.getElementById('inputBio').value.trim() || '',
         avatar: currentAvatarBase64,
         avatarZoom: parseFloat(document.getElementById('avatarZoomRange').value) || 1.0,
@@ -1575,6 +1653,8 @@
               theme: data.theme,
               bg_style: data.bgStyle,
               verified: data.verified,
+              is_vip: Boolean(data.is_vip),
+              vip_badge: data.vip_badge || null,
               is_active: true,
               links_json: data.links,
               vcard_json: data.vcard,

@@ -1,38 +1,40 @@
 /**
- * BioCraft Platform — Supabase Client Configuration
+ * ====================================================================
+ *   BioCraft Platform — Supabase Master Client Configuration
+ * ====================================================================
  * ضع هنا رابط مشروعك ومفتاح anon من لوحة تحكم Supabase (Project Settings -> API)
- * في حال ترك المفاتيح فارغة أو غير معرّفة، ستعمل المنصة تلقائياً بنظام LZ-String الاحتياطي.
  */
+const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const PUBLIC_PLATFORM_URL = "https://1234567890vi.github.io/linkbio-generator";
+
 const SUPABASE_CONFIG = {
-  url: "https://YOUR_SUPABASE_PROJECT_ID.supabase.co",
-  anonKey: "YOUR_SUPABASE_ANON_KEY",
+  url: SUPABASE_URL,
+  anonKey: SUPABASE_ANON_KEY,
 };
 
-/**
- * فحص ما إذا كانت مفاتيح Supabase مُدخلة وجاهزة
- */
 function isSupabaseConfigured() {
   return (
-    typeof SUPABASE_CONFIG !== "undefined" &&
-    SUPABASE_CONFIG.url &&
-    SUPABASE_CONFIG.anonKey &&
-    !SUPABASE_CONFIG.url.includes("YOUR_SUPABASE_PROJECT_ID") &&
-    !SUPABASE_CONFIG.anonKey.includes("YOUR_SUPABASE_ANON_KEY")
+    Boolean(SUPABASE_URL && SUPABASE_ANON_KEY) &&
+    !SUPABASE_URL.includes("YOUR_SUPABASE_PROJECT") &&
+    !SUPABASE_ANON_KEY.includes("YOUR_SUPABASE_ANON_KEY")
   );
 }
 
-/**
- * كائن عميل Supabase المشترك
- */
 let supabaseClient = null;
 function getSupabaseClient() {
   if (supabaseClient) return supabaseClient;
-  if (typeof supabase !== "undefined" && isSupabaseConfigured()) {
+  if (typeof window.supabase !== "undefined" && isSupabaseConfigured()) {
     try {
-      supabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+        },
+      });
       return supabaseClient;
-    } catch (err) {
-      console.warn("[BioCraft] Supabase initialization notice:", err);
+    } catch (e) {
+      console.warn("[BioCraft] Supabase client init error:", e);
     }
   }
   return null;

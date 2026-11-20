@@ -330,13 +330,16 @@
         </div>
       </div>
 
-      <!-- Display Name + Verified Badge -->
-      <h1 class="text-xl sm:text-2xl font-black text-slate-100 flex items-center justify-center gap-2 mb-1" id="displayNameWrap">
+      <!-- Display Name + Verified Badge + VIP Badge -->
+      <h1 class="text-xl sm:text-2xl font-black text-slate-100 flex items-center justify-center gap-2 mb-1 flex-wrap" id="displayNameWrap">
         <span id="displayName">اسم المستخدم</span>
         <span id="verifiedBadge" class="hidden text-sky-400 text-lg">
           <svg class="w-5 h-5 inline-block fill-current" viewBox="0 0 24 24">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.2 14.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.9-5.9 1.4 1.4-7.3 7.3z"/>
           </svg>
+        </span>
+        <span id="vipBadge" class="hidden text-amber-300 text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 font-bold items-center gap-1 shadow-sm shadow-amber-500/20">
+          <i class="fa-solid fa-crown text-[9px]"></i> VIP
         </span>
       </h1>
 
@@ -461,6 +464,8 @@
               title: data.site_title,
               displayName: data.display_name,
               verified: Boolean(data.verified),
+              is_vip: Boolean(data.is_vip),
+              vipBadge: data.vip_badge || 'VIP CREATOR',
               bio: data.bio,
               avatar: data.avatar_data,
               avatarZoom: data.avatar_zoom || 1.0,
@@ -577,6 +582,17 @@
         badge.classList.remove('hidden');
       } else {
         badge.classList.add('hidden');
+      }
+
+      const vipBadge = document.getElementById('vipBadge');
+      if (vipBadge) {
+        if (currentProfile.is_vip) {
+          vipBadge.classList.remove('hidden');
+          vipBadge.classList.add('inline-flex');
+        } else {
+          vipBadge.classList.add('hidden');
+          vipBadge.classList.remove('inline-flex');
+        }
       }
 
       const bioEl = document.getElementById('displayBio');
