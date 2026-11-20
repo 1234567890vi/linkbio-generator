@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BioCraft — منصة توليد مواقع البطاقات الرقمية الشخصية الفاخرة</title>
+  <meta name="description" content="اصنع بطاقتك الرقمية الشخصية والرابط الموحد الاحترافي مجاناً خلال ثوانٍ مع معاينة حية وتصدير كود كامل ورابط مشاركة فوري." />
+
+  <!-- Google Fonts: Cairo, Tajawal, Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- FontAwesome 6.5.2 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <!-- QRCode.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- LZ-String CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            cairo: ['Cairo', 'sans-serif'],
+            tajawal: ['Tajawal', 'sans-serif'],
+            inter: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            obsidian: '#070b14',
+            surface: 'rgba(255, 255, 255, 0.03)',
+            cyanGlow: '#00f2fe',
+            purpleGlow: '#4facfe',
+            pinkGlow: '#fe0979',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    :root {
+      --bg-primary: #070b14;
+      --bg-card: rgba(255, 255, 255, 0.035);
+      --border-card: rgba(255, 255, 255, 0.09);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-cyan: #00f2fe;
+      --accent-purple: #4facfe;
+      --accent-pink: #fe0979;
+    }
+    .light {
+      --bg-primary: #f8fafc;
+      --bg-card: rgba(255, 255, 255, 0.9);
+      --border-card: rgba(0, 0, 0, 0.08);
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+    }
+
+    body {
+      font-family: 'Cairo', 'Tajawal', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    #particles {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.16;
+      pointer-events: none;
+      z-index: 0;
+      animation: blobFloat 16s ease-in-out infinite alternate;
+      will-change: transform;
+    }
+    .blob-1 { width: 440px; height: 440px; background: #00f2fe; top: -140px; left: -140px; }
+    .blob-2 { width: 380px; height: 380px; background: #4facfe; bottom: -100px; right: -100px; animation-delay: 4s; }
+    .blob-3 { width: 280px; height: 280px; background: #fe0979; top: 45%; left: 45%; animation-delay: 8s; }
+
+    @keyframes blobFloat {
+      0%   { transform: translate3d(0, 0, 0) scale(1); }
+      100% { transform: translate3d(35px, 45px, 0) scale(1.08); }
+    }
+
+    .glass-panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-card);
+      will-change: transform;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0, 242, 254, 0.4); }
+
+    /* Mockup phone frame styling */
+    .mockup-phone {
+      width: 320px;
+      height: 640px;
+      border-radius: 44px;
+      border: 8px solid #1e293b;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 242, 254, 0.12);
+      position: relative;
+      background: #070b14;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      will-change: transform;
+    }
+    .mockup-phone::before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90px;
+      height: 20px;
+      background: #020617;
+      border-radius: 12px;
+      z-index: 40;
+    }
+
+    /* Rotating avatar ring inside preview */
+    .avatar-ring-svg {
+      animation: ringRotate 7s linear infinite;
+      will-change: transform;
+    }
+    @keyframes ringRotate {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* Social Card in Phone Preview */
+    .preview-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      margin-bottom: 9px;
+      border-radius: 16px;
+      text-decoration: none;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      transition: transform 0.22s cubic-bezier(0.34, 1.4, 0.64, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+      will-change: transform;
+    }
+    .preview-card:hover {
+      transform: translate3d(0, -2px, 0);
+      border-color: rgba(0, 242, 254, 0.35);
+      box-shadow: 0 8px 20px -4px rgba(0, 242, 254, 0.12);
+    }
+    .preview-icon-wrap {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    /* Form Inputs */
+    .input-field {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #f8fafc;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .input-field:focus {
+      border-color: #00f2fe;
+      background: rgba(0, 242, 254, 0.04);
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
+    }
+    .light .input-field {
+      background: rgba(0, 0, 0, 0.03);
+      border-color: rgba(0, 0, 0, 0.12);
+      color: #0f172a;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 11, 20, 0.78);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translate3d(-50%, 80px, 0);
+      background: rgba(7, 11, 20, 0.94);
+      border: 1px solid rgba(0, 242, 254, 0.4);
+      backdrop-filter: blur(12px);
+      padding: 12px 24px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #00f2fe;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
+      z-index: 150;
+      will-change: transform, opacity;
+    }
+    #toast.show {
+      transform: translate3d(-50%, 0, 0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col relative selection:bg-cyan-500 selection:text-black">
+
+  <canvas id="particles"></canvas>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <!-- ========================================================
+       TOP NAVIGATION BAR
+  ======================================================== -->
+  <header class="w-full glass-panel sticky top-0 z-40 px-4 sm:px-8 py-3.5 border-b border-white/10 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <!-- Geometric Glowing Brand Logo -->
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-400 via-sky-500 to-pink-500 p-[1.5px] shadow-lg shadow-cyan-500/20">
+        <div class="w-full h-full bg-[#070b14] rounded-[10px] flex items-center justify-center text-cyan-400">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
+          </svg>
+        </div>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="text-base sm:text-lg font-black tracking-tight text-white font-inter">BioCraft</span>
+          <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Pro Platform</span>
+        </div>
+        <p class="text-[11px] text-slate-400 hidden sm:block" data-i18n="tagline">منصة توليد بطاقات الأعمال والمواقع الشخصية الذكية</p>
+      </div>
+    </div>
+
+    <!-- Actions (Language, Theme, Reset) -->
+    <div class="flex items-center gap-2.5">
+      <!-- Language Selector -->
+      <div class="flex items-center bg-white/5 border border-white/10 rounded-xl p-1 text-xs">
+        <button onclick="setLanguage('ar')" id="lang-ar" class="px-2.5 py-1 rounded-lg font-bold transition-all bg-cyan-500 text-black">عربي</button>
+        <button onclick="setLanguage('en')" id="lang-en" class="px-2.5 py-1 rounded-lg font-bold transition-all text-slate-400 hover:text-white">EN</button>
+        <button onclick="setLanguage('fr')" id="lang-fr" class="px-2.5 py-1 rounded-lg font-bold transition-all text-slate-400 hover:text-white">FR</button>
+      </div>
+
+      <!-- Theme Switcher -->
+      <button onclick="toggleTheme()" class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-cyan-400 transition-colors" title="تبديل الوضع">
+        <i id="themeIcon" class="fa-regular fa-sun text-sm"></i>
+      </button>
+
+      <!-- Reset Profile Button -->
+      <button onclick="resetToTemplate()" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-slate-300 hover:text-pink-400 hover:border-pink-500/30 transition-all" title="استعادة القالب الافتراضي">
+        <i class="fa-solid fa-arrow-rotate-left text-xs"></i>
+        <span data-i18n="resetBtn">إعادة ضبط</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================
+       MAIN SPLIT-SCREEN WORKSPACE
+  ======================================================== -->
+  <main class="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row gap-8 items-start relative z-10">
+
+    <!-- RIGHT COLUMN: Builder Customization Form (Scrollable) -->
+    <section class="w-full lg:w-7/12 flex flex-col gap-6" id="formColumn">
+      
+      <!-- Section 1: Avatar Image Upload & Cropping -->
+      <div class="glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-camera"></i>
+            </span>
+            <h2 class="text-sm sm:text-base font-bold text-slate-100" data-i18n="secAvatar">الصورة الشخصية للبروفايل</h2>
+          </div>
+          <button onclick="loadSampleAvatar()" class="text-xs text-cyan-400 hover:underline flex items-center gap-1">
+            <i class="fa-solid fa-image"></i>
+            <span data-i18n="useSampleImg">صورة نموذجية</span>
+          </button>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center gap-5">
+          <!-- Thumbnail / Live Crop Preview -->
+          <div class="relative w-24 h-24 rounded-full overflow-hidden border-2 border-cyan-400/40 shadow-lg shadow-cyan-500/15 flex-shrink-0 bg-[#070b14]">
+            <img id="formAvatarPreview" src="./avatar.png" alt="Avatar" class="w-full h-full object-cover object-[50%_20%]" />
+          </div>
+
+          <!-- Drag and drop zone -->
+          <div id="dropZone" onclick="document.getElementById('avatarFileInput').click()" class="flex-1 w-full border-2 border-dashed border-white/15 hover:border-cyan-400/50 rounded-xl p-4 text-center cursor-pointer transition-colors bg-white/[0.01] hover:bg-cyan-500/[0.02]">
+            <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400 mb-1"></i>
+            <p class="text-xs font-bold text-slate-200" data-i18n="dropText">اسحب وأفلت صورتك هنا أو تصفح ملفاتك</p>
+            <p class="text-[11px] text-slate-500 mt-1" data-i18n="dropSub">يتم قص الصورة وضغطها وتوسيطها تلقائياً على الوجه</p>
+            <input type="file" id="avatarFileInput" accept="image/*" class="hidden" onchange="handleImageFile(this.files[0])" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Identity & Bio -->
+      <div class="glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 shadow-xl flex flex-col gap-4">
+        <div class="flex items-center gap-2.5 mb-1">
+          <span class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center text-xs">
+            <i class="fa-solid fa-id-card"></i>
+          </span>
+          <h2 class="text-sm sm:text-base font-bold text-slate-100" data-i18n="secIdentity">بيانات الهوية والنبذة</h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Site Title -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5" data-i18n="lblSiteTitle">عنوان تبويب المتصفح (Site Title)</label>
+            <input type="text" id="inputSiteTitle" class="input-field" placeholder="مثال: بكارة محمد عبد الجليل — بطاقة أعمال" oninput="updateLivePreview()" />
+          </div>
+
+          <!-- Display Name -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5" data-i18n="lblDisplayName">الاسم المعروض (Display Name)</label>
+            <input type="text" id="inputDisplayName" class="input-field" placeholder="مثال: بكارة محمد عبد الجليل" oninput="updateLivePreview()" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+          <!-- Site Slug -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5" data-i18n="lblSlug">المعرف / اسم الملف (Site Slug)</label>
+            <div class="flex items-center">
+              <span class="text-xs text-slate-500 px-3 py-2 bg-white/5 border border-white/10 rounded-r-xl border-l-0">.html</span>
+              <input type="text" id="inputSlug" class="input-field rounded-r-none text-left font-mono" placeholder="abdeljalil" oninput="updateLivePreview()" />
+            </div>
+          </div>
+
+          <!-- Verified Badge Switch -->
+          <div class="flex items-center justify-between sm:justify-start gap-4 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+            <div>
+              <span class="text-xs font-bold text-slate-200 block" data-i18n="lblVerified">شارة التوثيق الزرقاء</span>
+              <span class="text-[11px] text-slate-500 block" data-i18n="lblVerifiedSub">علامة زرقاء متجهة رسمية</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="inputVerified" class="sr-only peer" checked onchange="updateLivePreview()" />
+              <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Bio / Description with character counter -->
+        <div>
+          <div class="flex justify-between items-center mb-1.5">
+            <label class="text-xs font-semibold text-slate-300" data-i18n="lblBio">النبذة التعريفية (Bio)</label>
+            <span id="bioCharCounter" class="text-[11px] text-slate-500 font-mono">0 / 160</span>
+          </div>
+          <textarea id="inputBio" rows="2" maxlength="160" class="input-field resize-none" placeholder="اكتب نبذة مختصرة عنك وعن مجالك..." oninput="updateBioCounter(); updateLivePreview();"></textarea>
+          
+          <!-- Quick Suggestions Chips -->
+          <div class="flex flex-wrap gap-1.5 mt-2">
+            <span class="text-[10px] text-slate-500 self-center" data-i18n="quickChips">اقتراحات:</span>
+            <button type="button" onclick="appendBioSnippet('مطور تطبيقات وويب')" class="text-[10px] bg-white/5 hover:bg-cyan-500/10 hover:text-cyan-300 text-slate-400 border border-white/10 px-2 py-0.5 rounded-md transition-colors">+ مطور تطبيقات وويب</button>
+            <button type="button" onclick="appendBioSnippet('صانع محتوى تقني')" class="text-[10px] bg-white/5 hover:bg-cyan-500/10 hover:text-cyan-300 text-slate-400 border border-white/10 px-2 py-0.5 rounded-md transition-colors">+ صانع محتوى تقني</button>
+            <button type="button" onclick="appendBioSnippet('مصمم واجهات UX/UI')" class="text-[10px] bg-white/5 hover:bg-cyan-500/10 hover:text-cyan-300 text-slate-400 border border-white/10 px-2 py-0.5 rounded-md transition-colors">+ مصمم واجهات</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Dynamic Links Builder -->
+      <div class="glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 shadow-xl flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-lg bg-pink-500/10 border border-pink-500/20 text-pink-400 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-link"></i>
+            </span>
+            <div>
+              <h2 class="text-sm sm:text-base font-bold text-slate-100" data-i18n="secLinks">خانات الروابط والمنصات</h2>
+              <p class="text-[11px] text-slate-400" data-i18n="secLinksSub">تظهر البطاقة الأيقونة واسم التطبيق فقط مع زر النسخ السريع</p>
+            </div>
+          </div>
+          <button onclick="addNewLinkRow()" class="px-3.5 py-1.5 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 text-xs font-bold hover:bg-cyan-500/25 transition-all flex items-center gap-1.5">
+            <i class="fa-solid fa-plus text-xs"></i>
+            <span data-i18n="addLinkBtn">إضافة رابط</span>
+          </button>
+        </div>
+
+        <!-- Links List Container -->
+        <div id="linksList" class="flex flex-col gap-3">
+          <!-- Dynamic Link Rows Injected Here -->
+        </div>
+      </div>
+
+      <!-- Section 4: Dual Generation Engine (Download & Live Link) -->
+      <div class="glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 shadow-xl flex flex-col gap-4 bg-gradient-to-br from-white/[0.02] to-cyan-500/[0.04]">
+        <div>
+          <h2 class="text-sm sm:text-base font-black text-slate-100 flex items-center gap-2 mb-1" data-i18n="secExport">
+            <i class="fa-solid fa-bolt text-cyan-400"></i>
+            <span>محرك التوليد والتصدير الفوري</span>
+          </h2>
+          <p class="text-xs text-slate-400" data-i18n="secExportSub">اختر تصدير ملف HTML كامل مستقل لرفعه في أي مكان، أو توليد رابط سحابي مباشر فوري لمشاركته الآن.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
+          <!-- Button 1: Download index.html -->
+          <button onclick="downloadGeneratedHtml()" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-cyan-500/20 hover:opacity-95 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2.5">
+            <i class="fa-solid fa-file-arrow-down text-base"></i>
+            <span data-i18n="btnDownload">تحميل موقعك الجاهز (index.html)</span>
+          </button>
+
+          <!-- Button 2: Generate Live Share Link -->
+          <button onclick="generateLiveShareLink()" class="w-full py-3.5 px-4 rounded-xl bg-white/10 border border-white/20 text-white font-black text-xs sm:text-sm hover:bg-white/15 hover:border-cyan-400/50 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2.5">
+            <i class="fa-solid fa-share-nodes text-base text-cyan-400"></i>
+            <span data-i18n="btnLiveLink">توليد رابط مشاركة مباشر</span>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- LEFT COLUMN: Live Phone Preview (Sticky) -->
+    <section class="w-full lg:w-5/12 flex flex-col items-center sticky top-24" id="previewColumn">
+      <div class="text-center mb-3 hidden lg:block">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span data-i18n="livePreviewTitle">معاينة حية فورية ومباشرة (Real-time)</span>
+        </span>
+      </div>
+
+      <!-- The iPhone / Android Luxury Mockup -->
+      <div class="mockup-phone">
+        
+        <!-- Status Bar -->
+        <div class="w-full px-7 pt-3 pb-2 flex justify-between items-center text-[10px] text-slate-400 font-mono z-30 select-none">
+          <span id="phoneClock">12:30</span>
+          <div class="flex items-center gap-1.5">
+            <i class="fa-solid fa-signal text-[9px]"></i>
+            <i class="fa-solid fa-wifi text-[9px]"></i>
+            <i class="fa-solid fa-battery-full text-[10px]"></i>
+          </div>
+        </div>
+
+        <!-- Phone Inner Viewport (Scrollable) -->
+        <div class="flex-1 w-full overflow-y-auto px-4 py-4 flex flex-col items-center relative z-20" id="phoneViewport">
+          
+          <!-- Avatar + Ring -->
+          <div class="relative inline-block mb-3">
+            <svg class="avatar-ring-svg absolute -inset-2" width="94" height="94" viewBox="0 0 94 94">
+              <defs>
+                <linearGradient id="phoneRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#00f2fe" />
+                  <stop offset="50%" stop-color="#4facfe" />
+                  <stop offset="100%" stop-color="#fe0979" />
+                </linearGradient>
+              </defs>
+              <circle cx="47" cy="47" r="43" fill="none" stroke="url(#phoneRingGrad)" stroke-width="2" stroke-dasharray="200 70" stroke-linecap="round"/>
+            </svg>
+            <div class="w-20 h-20 rounded-full overflow-hidden bg-slate-900 border-2 border-transparent relative z-10 shadow-lg">
+              <img id="prevAvatar" src="./avatar.png" alt="Avatar" class="w-full h-full object-cover object-[50%_20%]" />
+            </div>
+          </div>
+
+          <!-- Name & Verified Badge -->
+          <div class="flex items-center justify-center gap-1.5 mb-1 text-center">
+            <h3 id="prevName" class="text-base font-black text-slate-100 tracking-tight">بكارة محمد عبد الجليل</h3>
+            <span id="prevVerified" class="text-sky-400">
+              <svg class="w-4 h-4 inline-block fill-current" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.2 14.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.9-5.9 1.4 1.4-7.3 7.3z"/>
+              </svg>
+            </span>
+          </div>
+
+          <!-- Bio -->
+          <p id="prevBio" class="text-[11px] text-slate-400 text-center leading-relaxed mb-4 max-w-[240px]">مطور تطبيقات وويب | صانع محتوى تقني</p>
+
+          <!-- Action buttons inside preview (Share, Save contact, QR) -->
+          <div class="flex items-center justify-center gap-2 w-full mb-4 px-2">
+            <div class="flex-1 py-1.5 px-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-[10px] font-bold flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-share-nodes text-[10px]"></i>
+              <span data-i18n="phoneShare">مشاركة</span>
+            </div>
+            <div class="flex-1 py-1.5 px-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-[10px] font-bold flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-user-plus text-[10px]"></i>
+              <span data-i18n="phoneSave">حفظ جهة اتصال</span>
+            </div>
+            <div class="w-7 h-7 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-[10px] flex items-center justify-center">
+              <i class="fa-solid fa-qrcode"></i>
+            </div>
+          </div>
+
+          <!-- Cards List Inside Phone -->
+          <div id="prevCardsList" class="w-full flex flex-col">
+            <!-- Dynamic Cards appear here -->
+          </div>
+
+          <!-- Phone Footer -->
+          <div class="mt-4 pt-3 border-t border-white/5 text-[9px] text-slate-500 text-center w-full">
+            &copy; <span id="prevYear"></span> BioCraft Cards
+          </div>
+        </div>
+
+        <!-- Phone Bottom Bar Home Indicator -->
+        <div class="w-28 h-1 bg-slate-600 rounded-full mx-auto my-2 z-30"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================
+       MOBILE FLOATING TOGGLE PILL (Switch form / preview)
+  ======================================================== -->
+  <div class="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center bg-[#070b14]/90 border border-white/15 p-1 rounded-full shadow-2xl backdrop-blur-xl">
+    <button onclick="switchMobileTab('form')" id="tabBtnForm" class="px-4 py-2 rounded-full text-xs font-bold transition-all bg-cyan-500 text-black flex items-center gap-1.5">
+      <i class="fa-solid fa-sliders"></i>
+      <span data-i18n="tabEdit">تعديل</span>
+    </button>
+    <button onclick="switchMobileTab('preview')" id="tabBtnPreview" class="px-4 py-2 rounded-full text-xs font-bold transition-all text-slate-300 hover:text-white flex items-center gap-1.5">
+      <i class="fa-solid fa-mobile-screen"></i>
+      <span data-i18n="tabPreview">المعاينة الحية</span>
+    </button>
+  </div>
+
+  <!-- ========================================================
+       MODAL: GENERATED LIVE SHARE LINK & QR
+  ======================================================== -->
+  <div id="liveLinkModal" class="modal-overlay" onclick="closeLiveModal(event)">
+    <div class="glass-panel border border-white/15 rounded-3xl p-6 sm:p-8 w-[92%] max-w-md shadow-2xl relative" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-center mb-5">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center">
+            <i class="fa-solid fa-link"></i>
+          </div>
+          <h3 class="text-base font-bold text-white" data-i18n="modalTitle">رابط مشاركة بطاقتك المباشر</h3>
+        </div>
+        <button onclick="closeLiveModal()" class="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- QR Code Canvas -->
+      <div class="bg-white p-4 rounded-2xl w-[200px] h-[200px] mx-auto mb-4 flex items-center justify-center shadow-lg" id="modalQrCode"></div>
+      
+      <p class="text-xs text-center text-slate-400 mb-4" data-i18n="modalSub">امسح الكود لفتح البطاقة فوراً أو انسخ الرابط أدناه:</p>
+
+      <!-- Link URL Input + Copy Button -->
+      <div class="flex items-center gap-2 mb-4">
+        <input type="text" id="modalLinkInput" readonly class="input-field font-mono text-xs text-left" />
+        <button onclick="copyModalLink()" class="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all flex-shrink-0">
+          <i class="fa-regular fa-copy"></i>
+          <span data-i18n="btnCopy">نسخ</span>
+        </button>
+      </div>
+
+      <!-- Open Link in New Tab -->
+      <a id="modalOpenBtn" href="#" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-400/40 text-cyan-400 text-xs font-bold transition-all flex items-center justify-center gap-2">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        <span data-i18n="btnOpen">فتح الموقع في تبويب جديد</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="toastMsg">تم النسخ بنجاح!</span>
+  </div>
+
+  <!-- Hidden canvas for image cropping & compression -->
+  <canvas id="hiddenCropCanvas" class="hidden"></canvas>
+
+  <!-- ========================================================
+       JAVASCRIPT LOGIC
+  ======================================================== -->
+  <script>
+    /* ======================================================
+       PLATFORMS REGISTRY & SMART RESOLVERS
+    ====================================================== */
+    const PLATFORMS = {
+      tiktok: {
+        name: 'TikTok',
+        icon: 'fa-brands fa-tiktok',
+        bg: 'linear-gradient(135deg,#010101,#232323)',
+        color: '#ffffff',
+        placeholder: '@username or https://www.tiktok.com/@...',
+        resolve: (val) => {
+          if (!val) return '';
+          if (val.startsWith('http://') || val.startsWith('https://')) return val;
+          const user = val.startsWith('@') ? val.substring(1) : val;
+          return `https://www.tiktok.com/@${user}`;
+        },
+        copyText: (val) => val.startsWith('http') ? (val.split('@')[1] ? '@' + val.split('@')[1] : val) : (val.startsWith('@') ? val : '@' + val)
+      },
+      instagram: {
+        name: 'Instagram',
+        icon: 'fa-brands fa-instagram',
+        bg: 'linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)',
+        color: '#ffffff',
+        placeholder: '@username or https://www.instagram.com/...',
+        resolve: (val) => {
+          if (!val) return '';
+          if (val.startsWith('http://') || val.startsWith('https://')) return val;
+          const user = val.startsWith('@') ? val.substring(1) : val;
+          return `https://www.instagram.com/${user}`;
+        },
+        copyText: (val) => val.startsWith('http') ? val.replace(/\/$/, '').split('/').pop() : (val.startsWith('@') ? val : '@' + val)
+      },
+      snapchat: {
+        name: 'Snapchat',
+        icon: 'fa-brands fa-snapchat',
+        bg: '#FFFC00',
+        color: '#0a0f1d',
+        placeholder: 'username or https://www.snapchat.com/add/...',
+        resolve: (val) => {
+          if (!val) return '';
+          if (val.startsWith('http://') || val.startsWith('https://')) return val;
+          const user = val.startsWith('@') ? val.substring(1) : val;
+          return `https://www.snapchat.com/add/${user}`;
+        },
+        copyText: (val) => val.startsWith('http') ? val.replace(/\/$/, '').split('/').pop() : val.replace('@', '')
+      },
+      whatsapp: {
+        name: 'WhatsApp',
+        icon: 'fa-brands fa-whatsapp',
+        bg: 'linear-gradient(135deg,#25D366,#128C7E)',
+        color: '#ffffff',
+        placeholder: '0659087568 or +213659087568',
+        resolve: (val) => {
+          if (!val) return '';
+          if (val.startsWith('http://') || val.startsWith('https://')) return val;
+          let num = val.replace(/[\s\-\(\)]/g, '');
+          if (num.startsWith('0')) num = '213' + num.substring(1);
+          if (num.startsWith('+')) num = num.substring(1);
+          return `https://wa.me/${num}`;
+        },
+        copyText: (val) => val.replace(/[^0-9]/g, '')
+      },
+      facebook: {
+        name: 'Facebook',
+        icon: 'fa-brands fa-facebook-f',
+        bg: 'linear-gradient(135deg,#1877F2,#0a4dbf)',
+        color: '#ffffff',
+        placeholder: 'Facebook username or profile URL',
+        resolve: (val) => {
+          if (!val) return '';
+          if (val.startsWith('http://') || val.startsWith('https://')) return val;
+          return `https://www.facebook.com/search/top/?q=${encodeURIComponent(val)}`;
+        },
+        copyText: (val) => val
+      },
+      phone: {
+        name: 'اتصال مباشر',
+        icon: 'fa-solid fa-phone-volume',
+        bg: 'linear-gradient(135deg,#00f2fe,#4facfe)',
+        color: '#070b14',
+        placeholder: '0659087568 or +213...',
+        resolve: (val) => {
+          if (!val) return '';
+          if (val.startsWith('tel:')) return val;
+          let num = val.replace(/[\s\-]/g, '');
+          if (num.startsWith('0')) num = '+213' + num.substring(1);
+          return `tel:${num}`;
+        },
+        copyText: (val) => val
+      },
+      youtube: {
+        name: 'YouTube',
+        icon: 'fa-brands fa-youtube',
+        bg: 'linear-gradient(135deg,#FF0000,#b30000)',
+        color: '#ffffff',
+        placeholder: '@channel or https://www.youtube.com/...',
+        resolve: (val) => {
+          if (!val) return '';
+          if (val.startsWith('http://') || val.startsWith('https://')) return val;
+          return val.startsWith('@') ? `https://www.youtube.com/${val}` : `https://www.youtube.com/@${val}`;
+        },
+        copyText: (val) => val
+      },
+      twitter: {
+        name: 'X (Twitter)',
+        icon: 'fa-brands fa-x-twitter',
+        bg: '#000000',
+        color: '#ffffff',
+        placeholder: '@handle or https://x.com/...',
+        resolve: (val) => {
+          if (!val) return '';
+          if (val.startsWith('http://') || val.startsWith('https://')) return val;
+          const user = val.startsWith('@') ? val.substring(1) : val;
+          return `https://x.com/${user}`;
+        },
+        copyText: (val) => val.startsWith('@') ? val : '@' + val
+      },
+      telegram: {
+        name: 'Telegram',
+        icon: 'fa-brands fa-telegram',
+        bg: 'linear-gradient(135deg,#229ED9,#0088cc)',
+        color: '#ffffff',
+        placeholder: '@username or https://t.me/...',
+        resolve: (val) => {
+          if (!val) return '';
+          if (val.startsWith('http://') || val.startsWith('https://')) return val;
+          const user = val.startsWith('@') ? val.substring(1) : val;
+          return `https://t.me/${user}`;
+        },
+        copyText: (val) => val.startsWith('@') ? val : '@' + val
+      },
+      linkedin: {
+        name: 'LinkedIn',
+        icon: 'fa-brands fa-linkedin-in',
+        bg: 'linear-gradient(135deg,#0077b5,#005582)',
+        color: '#ffffff',
+        placeholder: 'https://www.linkedin.com/in/...',
+        resolve: (val) => {
+          if (!val) return '';
+          if (val.startsWith('http://') || val.startsWith('https://')) return val;
+          return `https://www.linkedin.com/in/${val}`;
+        },
+        copyText: (val) => val
+      },
+      website: {
+        name: 'موقع إلكتروني',
+        icon: 'fa-solid fa-globe',
+        bg: 'linear-gradient(135deg,#6366f1,#4338ca)',
+        color: '#ffffff',
+        placeholder: 'https://www.yourdomain.com',
+        resolve: (val) => {
+          if (!val) return '';
+          if (val.startsWith('http://') || val.startsWith('https://')) return val;
+          return `https://${val}`;
+        },
+        copyText: (val) => val
+      }
+    };
+
+    /* ======================================================
+       INITIAL STATE
+    ====================================================== */
+    let currentAvatarBase64 = './avatar.png';
+    let currentLang = 'ar';
+    let isDarkMode = true;
+
+    let profileLinks = [
+      { id: 1, platform: 'tiktok', value: '@tlemceni.000', customTitle: 'TikTok' },
+      { id: 2, platform: 'instagram', value: '@abd_jalile013', customTitle: 'Instagram' },
+      { id: 3, platform: 'snapchat', value: 'abdjalile_13', customTitle: 'Snapchat' },
+      { id: 4, platform: 'whatsapp', value: '0659087568', customTitle: 'WhatsApp' },
+      { id: 5, platform: 'facebook', value: 'abd jalile tlm', customTitle: 'Facebook' },
+      { id: 6, platform: 'phone', value: '0659087568', customTitle: 'اتصال مباشر' },
+    ];
+
+    /* ======================================================
+       IMAGE HANDLING & CANVAS CROP
+    ====================================================== */
+    function handleImageFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.getElementById('hiddenCropCanvas');
+          const ctx = canvas.getContext('2d');
+          const size = 400;
+          canvas.width = size;
+          canvas.height = size;
+
+          // Draw center-top crop (50% 20%)
+          const aspect = img.width / img.height;
+          let sw, sh, sx, sy;
+          if (aspect > 1) {
+            sh = img.height;
+            sw = img.height;
+            sx = (img.width - sw) / 2;
+            sy = 0;
+          } else {
+            sw = img.width;
+            sh = img.width;
+            sx = 0;
+            sy = img.height * 0.12; // Focus near face
+          }
+
+          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
+          currentAvatarBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+          document.getElementById('formAvatarPreview').src = currentAvatarBase64;
+          document.getElementById('prevAvatar').src = currentAvatarBase64;
+          showToast('تم ضبط وضغط الصورة بنجاح!');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function loadSampleAvatar() {
+      // Default sample avatar
+      currentAvatarBase64 = './avatar.png';
+      document.getElementById('formAvatarPreview').src = currentAvatarBase64;
+      document.getElementById('prevAvatar').src = currentAvatarBase64;
+      showToast('تم تطبيق الصورة النموذجية');
+    }
+
+    /* Drag and drop listeners */
+    const dropZone = document.getElementById('dropZone');
+    ['dragenter', 'dragover'].forEach(name => {
+      dropZone.addEventListener(name, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-cyan-400');
+      });
+    });
+    ['dragleave', 'drop'].forEach(name => {
+      dropZone.addEventListener(name, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-cyan-400');
+      });
+    });
+    dropZone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleImageFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    /* ======================================================
+       DYNAMIC LINKS FORM BUILDER
+    ====================================================== */
+    function renderFormLinks() {
+      const container = document.getElementById('linksList');
+      container.innerHTML = '';
+
+      profileLinks.forEach((item, index) => {
+        const plat = PLATFORMS[item.platform] || PLATFORMS.website;
+        const row = document.createElement('div');
+        row.className = 'p-3.5 rounded-xl bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row items-center gap-3 transition-all';
+        row.id = `link-row-${item.id}`;
+
+        let optionsHtml = '';
+        Object.keys(PLATFORMS).forEach(k => {
+          optionsHtml += `<option value="${k}" ${k === item.platform ? 'selected' : ''}>${PLATFORMS[k].name}</option>`;
+        });
+
+        row.innerHTML = `
+          <!-- Reorder & Icon -->
+          <div class="flex items-center gap-2 self-start sm:self-center">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs" style="background:${plat.bg};color:${plat.color};">
+              <i class="${plat.icon}"></i>
+            </div>
+            <select class="input-field py-1.5 px-2 text-xs w-32 font-bold cursor-pointer bg-slate-900" onchange="changeLinkPlatform(${item.id}, this.value)">
+              ${optionsHtml}
+            </select>
+          </div>
+
+          <!-- Input value -->
+          <div class="flex-1 w-full">
+            <input type="text" class="input-field py-1.5 text-xs text-left font-mono" placeholder="${plat.placeholder}" value="${escapeHtml(item.value)}" oninput="updateLinkValue(${item.id}, this.value)" />
+          </div>
+
+          <!-- Custom Title Override (Optional) -->
+          <div class="w-full sm:w-32">
+            <input type="text" class="input-field py-1.5 text-xs" placeholder="عنوان مخصص" value="${escapeHtml(item.customTitle || '')}" oninput="updateLinkTitle(${item.id}, this.value)" />
+          </div>
+
+          <!-- Action buttons (Up, Down, Delete) -->
+          <div class="flex items-center gap-1 self-end sm:self-center">
+            <button onclick="moveLink(${index}, -1)" ${index === 0 ? 'disabled class="opacity-30"' : ''} class="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs flex items-center justify-center" title="تحريك لأعلى">
+              <i class="fa-solid fa-arrow-up"></i>
+            </button>
+            <button onclick="moveLink(${index}, 1)" ${index === profileLinks.length - 1 ? 'disabled class="opacity-30"' : ''} class="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs flex items-center justify-center" title="تحريك لأسفل">
+              <i class="fa-solid fa-arrow-down"></i>
+            </button>
+            <button onclick="removeLink(${item.id})" class="w-7 h-7 rounded-lg bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 text-xs flex items-center justify-center" title="حذف">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      updateLivePreview();
+    }
+
+    function addNewLinkRow() {
+      const nextId = Date.now();
+      profileLinks.push({
+        id: nextId,
+        platform: 'website',
+        value: '',
+        customTitle: 'موقع إلكتروني'
+      });
+      renderFormLinks();
+    }
+
+    function removeLink(id) {
+      profileLinks = profileLinks.filter(l => l.id !== id);
+      renderFormLinks();
+    }
+
+    function changeLinkPlatform(id, newPlat) {
+      const item = profileLinks.find(l => l.id === id);
+      if (item) {
+        item.platform = newPlat;
+        item.customTitle = PLATFORMS[newPlat].name;
+        renderFormLinks();
+      }
+    }
+
+    function updateLinkValue(id, val) {
+      const item = profileLinks.find(l => l.id === id);
+      if (item) {
+        item.value = val;
+        updateLivePreview();
+      }
+    }
+
+    function updateLinkTitle(id, val) {
+      const item = profileLinks.find(l => l.id === id);
+      if (item) {
+        item.customTitle = val;
+        updateLivePreview();
+      }
+    }
+
+    function moveLink(index, dir) {
+      const target = index + dir;
+      if (target < 0 || target >= profileLinks.length) return;
+      const tmp = profileLinks[index];
+      profileLinks[index] = profileLinks[target];
+      profileLinks[target] = tmp;
+      renderFormLinks();
+    }
+
+    /* ======================================================
+       LIVE PHONE PREVIEW REACTION
+    ====================================================== */
+    function updateLivePreview() {
+      const name = document.getElementById('inputDisplayName').value.trim() || 'بكارة محمد عبد الجليل';
+      const bio = document.getElementById('inputBio').value.trim() || 'مطور تطبيقات وويب | صانع محتوى تقني';
+      const isVerified = document.getElementById('inputVerified').checked;
+
+      document.getElementById('prevName').textContent = name;
+      document.getElementById('prevBio').textContent = bio;
+      document.getElementById('prevVerified').style.display = isVerified ? 'inline-block' : 'none';
+
+      const prevCardsContainer = document.getElementById('prevCardsList');
+      prevCardsContainer.innerHTML = '';
+
+      profileLinks.forEach(item => {
+        const plat = PLATFORMS[item.platform] || PLATFORMS.website;
+        const resolvedUrl = plat.resolve(item.value);
+        const cardTitle = item.customTitle || plat.name;
+        const copyVal = plat.copyText(item.value);
+
+        const cardEl = document.createElement('div');
+        cardEl.className = 'preview-card';
+        cardEl.innerHTML = `
+          <div class="preview-icon-wrap" style="background:${plat.bg};color:${plat.color};">
+            <i class="${plat.icon}"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <span class="text-xs font-bold text-slate-100 block tracking-wide truncate">${escapeHtml(cardTitle)}</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button class="w-6 h-6 rounded-md bg-white/5 hover:bg-white/10 text-slate-400 hover:text-cyan-400 text-[10px] flex items-center justify-center transition-colors" onclick="copyCardValue(event, '${escapeQuotes(copyVal)}')" title="نسخ">
+              <i class="fa-regular fa-copy"></i>
+            </button>
+            <i class="fa-solid fa-chevron-left text-[9px] text-slate-500"></i>
+          </div>
+        `;
+        prevCardsContainer.appendChild(cardEl);
+      });
+
+      document.getElementById('prevYear').textContent = new Date().getFullYear();
+    }
+
+    function updateBioCounter() {
+      const len = document.getElementById('inputBio').value.length;
+      document.getElementById('bioCharCounter').textContent = `${len} / 160`;
+    }
+
+    function appendBioSnippet(text) {
+      const bio = document.getElementById('inputBio');
+      if (bio.value.trim().length > 0) {
+        bio.value += ` | ${text}`;
+      } else {
+        bio.value = text;
+      }
+      updateBioCounter();
+      updateLivePreview();
+    }
+
+    /* ======================================================
+       DUAL GENERATION ENGINE: DOWNLOAD HTML & LIVE LINK
+    ====================================================== */
+    function getSiteData() {
+      return {
+        title: document.getElementById('inputSiteTitle').value.trim() || 'بطاقة رقمية شخصية',
+        displayName: document.getElementById('inputDisplayName').value.trim() || 'بكارة محمد عبد الجليل',
+        slug: document.getElementById('inputSlug').value.trim() || 'abdeljalil',
+        verified: document.getElementById('inputVerified').checked,
+        bio: document.getElementById('inputBio').value.trim() || '',
+        avatar: currentAvatarBase64,
+        links: profileLinks.map(l => {
+          const plat = PLATFORMS[l.platform] || PLATFORMS.website;
+          return {
+            platform: l.platform,
+            title: l.customTitle || plat.name,
+            url: plat.resolve(l.value),
+            copyValue: plat.copyText(l.value)
+          };
+        })
+      };
+    }
+
+    function downloadGeneratedHtml() {
+      const data = getSiteData();
+
+      // Build standalone, self-contained single-file HTML
+      const htmlContent = `<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escapeHtml(data.title)}</title>
+  <meta name="description" content="${escapeHtml(data.bio || data.displayName)}" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg-primary: #070b14;
+      --bg-card: rgba(255, 255, 255, 0.04);
+      --border-card: rgba(255, 255, 255, 0.09);
+      --text-primary: #f8fafc;
+      --accent-cyan: #00f2fe;
+    }
+    body {
+      font-family: 'Cairo', 'Tajawal', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    #particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .blob {
+      position: fixed; border-radius: 50%; filter: blur(90px); opacity: 0.16; pointer-events: none; z-index: 0;
+      animation: blobFloat 14s ease-in-out infinite alternate; will-change: transform;
+    }
+    .blob-1 { width: 380px; height: 380px; background: #00f2fe; top: -100px; left: -100px; }
+    .blob-2 { width: 320px; height: 320px; background: #4facfe; bottom: -80px; right: -80px; animation-delay: 5s; }
+    @keyframes blobFloat {
+      0%   { transform: translate3d(0, 0, 0) scale(1); }
+      100% { transform: translate3d(28px, 36px, 0) scale(1.06); }
+    }
+    .glass {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-card);
+      will-change: transform;
+    }
+    .avatar-ring-svg { animation: ringRotate 7s linear infinite; will-change: transform; }
+    @keyframes ringRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .social-card {
+      display: flex; align-items: center; gap: 14px; padding: 14px 18px; margin-bottom: 11px; border-radius: 18px;
+      text-decoration: none; position: relative; border: 1px solid var(--border-card); background: var(--bg-card);
+      transition: transform 0.25s cubic-bezier(0.34,1.4,0.64,1), border-color 0.25s ease, box-shadow 0.25s ease;
+      will-change: transform;
+    }
+    .social-card:hover {
+      transform: translate3d(0, -3px, 0); border-color: rgba(0,242,254,0.35); box-shadow: 0 10px 25px -5px rgba(0,242,254,0.12);
+    }
+    .copy-btn {
+      width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--border-card); background: rgba(255,255,255,0.05);
+      color: #94a3b8; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;
+    }
+    .copy-btn:hover { color: #00f2fe; border-color: rgba(0,242,254,0.4); background: rgba(0,242,254,0.1); transform: scale(1.05); }
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translate3d(-50%, 80px, 0); background: rgba(7,11,20,0.92);
+      border: 1px solid rgba(0,242,254,0.35); padding: 12px 22px; border-radius: 9999px; display: flex; align-items: center;
+      gap: 10px; font-size: 13px; font-weight: 700; color: #00f2fe; opacity: 0; pointer-events: none; transition: all 0.35s ease; z-index: 100;
+    }
+    #toast.show { transform: translate3d(-50%, 0, 0); opacity: 1; }
+    #qrModal {
+      position: fixed; inset: 0; background: rgba(7,11,20,0.75); backdrop-filter: blur(10px); display: flex;
+      align-items: center; justify-content: center; z-index: 90; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    #qrModal.show { opacity: 1; pointer-events: auto; }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 pb-20 relative">
+
+  <canvas id="particles"></canvas>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <main class="w-full max-w-md glass rounded-3xl p-6 sm:p-8 z-10 shadow-2xl relative">
+    <div class="flex flex-col items-center text-center">
+      <div class="relative inline-block mb-4">
+        <svg class="avatar-ring-svg absolute -inset-2" width="124" height="124" viewBox="0 0 124 124">
+          <defs>
+            <linearGradient id="ringG" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#00f2fe" />
+              <stop offset="50%" stop-color="#4facfe" />
+              <stop offset="100%" stop-color="#fe0979" />
+            </linearGradient>
+          </defs>
+          <circle cx="62" cy="62" r="58" fill="none" stroke="url(#ringG)" stroke-width="2.5" stroke-dasharray="270 90" stroke-linecap="round"/>
+        </svg>
+        <div class="w-28 h-28 rounded-full overflow-hidden bg-slate-900 border-2 border-transparent relative z-10 shadow-xl">
+          <img src="${data.avatar}" alt="${escapeHtml(data.displayName)}" class="w-full h-full object-cover object-[50%_20%]" />
+        </div>
+      </div>
+
+      <h1 class="text-2xl font-black text-slate-100 flex items-center justify-center gap-2 mb-1.5">
+        <span>${escapeHtml(data.displayName)}</span>
+        ${data.verified ? `
+        <span class="text-sky-400">
+          <svg class="w-5 h-5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.2 14.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.9-5.9 1.4 1.4-7.3 7.3z"/></svg>
+        </span>` : ''}
+      </h1>
+
+      ${data.bio ? `<p class="text-xs sm:text-sm text-slate-400 max-w-xs leading-relaxed mb-6">${escapeHtml(data.bio)}</p>` : ''}
+
+      <div class="flex items-center justify-center gap-3 w-full mb-6">
+        <button onclick="shareProfile()" class="flex-1 py-2.5 px-3 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-400/40 text-xs font-bold text-slate-200 hover:text-cyan-400 transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-share-nodes"></i>
+          <span>مشاركة</span>
+        </button>
+        <button onclick="downloadVCard()" class="flex-1 py-2.5 px-3 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-400/40 text-xs font-bold text-slate-200 hover:text-cyan-400 transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-user-plus"></i>
+          <span>حفظ جهة الاتصال</span>
+        </button>
+        <button onclick="openQRModal()" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-400/40 text-slate-200 hover:text-cyan-400 flex items-center justify-center transition-all">
+          <i class="fa-solid fa-qrcode text-sm"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="w-full flex flex-col">
+      ${data.links.map(l => {
+        const plat = PLATFORMS[l.platform] || PLATFORMS.website;
+        return `
+        <a href="${escapeHtml(l.url || '#')}" target="_blank" rel="noopener noreferrer" class="social-card">
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center text-lg flex-shrink-0" style="background:${plat.bg};color:${plat.color};">
+            <i class="${plat.icon}"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <span class="text-sm font-bold text-slate-100 block tracking-wide truncate">${escapeHtml(l.title || plat.name)}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            ${l.copyValue ? `
+            <button class="copy-btn" onclick="copyValue(event, '${escapeQuotes(l.copyValue)}')" title="نسخ">
+              <i class="fa-regular fa-copy"></i>
+            </button>` : ''}
+            <i class="fa-solid fa-chevron-left text-xs text-slate-500"></i>
+          </div>
+        </a>`;
+      }).join('')}
+    </div>
+
+    <footer class="mt-8 pt-4 border-t border-white/5 text-center text-xs text-slate-500">
+      &copy; ${new Date().getFullYear()} ${escapeHtml(data.displayName)} — جميع الحقوق محفوظة
+    </footer>
+  </main>
+
+  <div id="qrModal" onclick="closeQRModal(event)">
+    <div class="glass border border-white/10 rounded-3xl p-6 text-center max-w-xs w-full" onclick="event.stopPropagation()">
+      <h3 class="text-base font-bold text-slate-100 mb-4 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-qrcode text-cyan-400"></i>
+        <span>رمز QR للبطاقة</span>
+      </h3>
+      <div id="qrCanvasWrap" class="p-3 bg-white rounded-2xl w-[190px] h-[190px] mx-auto mb-4 flex items-center justify-center"></div>
+      <button onclick="closeQRModal()" class="w-full py-2 rounded-xl bg-white/10 text-xs font-bold text-slate-300 hover:text-white">إغلاق</button>
+    </div>
+  </div>
+
+  <div id="toast"><i class="fa-solid fa-circle-check"></i> <span id="toastMsg">تم النسخ بنجاح!</span></div>
+
+  <script>
+    function showToast(m) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = m;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+    function copyValue(e, v) {
+      e.preventDefault(); e.stopPropagation();
+      navigator.clipboard.writeText(v).then(() => showToast('تم النسخ بنجاح!'));
+    }
+    function shareProfile() {
+      if (navigator.share) {
+        navigator.share({ title: "${escapeQuotes(data.displayName)}", url: window.location.href }).catch(()=>{});
+      } else {
+        navigator.clipboard.writeText(window.location.href).then(() => showToast('تم نسخ الرابط!'));
+      }
+    }
+    function downloadVCard() {
+      const v = 'BEGIN:VCARD\\nVERSION:3.0\\nFN:${escapeQuotes(data.displayName)}\\nURL:' + window.location.href + '\\nEND:VCARD';
+      const b = new Blob([v], { type: 'text/vcard;charset=utf-8' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = '${escapeQuotes(data.slug || 'contact')}.vcf';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      showToast('جارٍ تحميل جهة الاتصال...');
+    }
+    let qrInit = false;
+    function openQRModal() {
+      document.getElementById('qrModal').classList.add('show');
+      if (!qrInit) {
+        new QRCode(document.getElementById('qrCanvasWrap'), { text: window.location.href, width: 170, height: 170 });
+        qrInit = true;
+      }
+    }
+    function closeQRModal(e) {
+      if (!e || e.target === document.getElementById('qrModal')) document.getElementById('qrModal').classList.remove('show');
+    }
+
+    // Canvas Background
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    let W = canvas.width = window.innerWidth * dpr;
+    let H = canvas.height = window.innerHeight * dpr;
+    const pts = [];
+    for(let i=0; i<35; i++) pts.push({ x: Math.random()*W, y: Math.random()*H, vx:(Math.random()-0.5)*0.5*dpr, vy:(Math.random()-0.5)*0.5*dpr, r:(Math.random()*1.5+0.8)*dpr });
+    function loop() {
+      ctx.clearRect(0,0,W,H);
+      pts.forEach(p => {
+        p.x+=p.vx; p.y+=p.vy; if(p.x<0) p.x=W; if(p.x>W) p.x=0; if(p.y<0) p.y=H; if(p.y>H) p.y=0;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fillStyle='rgba(0,242,254,0.5)'; ctx.fill();
+      });
+      for(let i=0; i<pts.length; i++) {
+        for(let j=i+1; j<pts.length; j++) {
+          const d = Math.hypot(pts[i].x-pts[j].x, pts[i].y-pts[j].y);
+          if (d < 110*dpr) {
+            ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y);
+            ctx.strokeStyle='rgba(0,242,254,' + ((1-d/(110*dpr))*0.2) + ')'; ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(loop);
+    }
+    loop();
+  <\/script>
+</body>
+</html>`;
+
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${data.slug || 'index'}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showToast('تم تصدير وتحميل موقعك المستقل بنجاح!');
+    }
+
+    function generateLiveShareLink() {
+      const data = getSiteData();
+      const jsonStr = JSON.stringify(data);
+      const compressed = LZString.compressToEncodedURIComponent(jsonStr);
+
+      const baseUrl = window.location.origin + window.location.pathname.replace(/index\.html$/, '') + 'view.html';
+      const fullUrl = `${baseUrl}#${compressed}`;
+
+      document.getElementById('modalLinkInput').value = fullUrl;
+      document.getElementById('modalOpenBtn').href = fullUrl;
+
+      // Generate QR Code inside modal
+      const qrWrap = document.getElementById('modalQrCode');
+      qrWrap.innerHTML = '';
+      new QRCode(qrWrap, {
+        text: fullUrl,
+        width: 175,
+        height: 175,
+        colorDark: '#070b14',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M,
+      });
+
+      document.getElementById('liveLinkModal').classList.add('active');
+    }
+
+    function closeLiveModal(e) {
+      if (!e || e.target === document.getElementById('liveLinkModal')) {
+        document.getElementById('liveLinkModal').classList.remove('active');
+      }
+    }
+
+    function copyModalLink() {
+      const input = document.getElementById('modalLinkInput');
+      input.select();
+      navigator.clipboard.writeText(input.value).then(() => {
+        showToast('تم نسخ الرابط المباشر بنجاح!');
+      });
+    }
+
+    function copyCardValue(e, val) {
+      e.preventDefault();
+      e.stopPropagation();
+      navigator.clipboard.writeText(val).then(() => {
+        showToast('تم النسخ!');
+      });
+    }
+
+    /* ======================================================
+       MULTILINGUAL & THEME
+    ====================================================== */
+    const I18N = {
+      ar: {
+        dir: 'rtl',
+        tagline: 'منصة توليد بطاقات الأعمال والمواقع الشخصية الذكية',
+        resetBtn: 'إعادة ضبط',
+        secAvatar: 'الصورة الشخصية للبروفايل',
+        useSampleImg: 'صورة نموذجية',
+        dropText: 'اسحب وأفلت صورتك هنا أو تصفح ملفاتك',
+        dropSub: 'يتم قص الصورة وضغطها وتوسيطها تلقائياً على الوجه',
+        secIdentity: 'بيانات الهوية والنبذة',
+        lblSiteTitle: 'عنوان تبويب المتصفح (Site Title)',
+        lblDisplayName: 'الاسم المعروض (Display Name)',
+        lblSlug: 'المعرف / اسم الملف (Site Slug)',
+        lblVerified: 'شارة التوثيق الزرقاء',
+        lblVerifiedSub: 'علامة زرقاء متجهة رسمية',
+        lblBio: 'النبذة التعريفية (Bio)',
+        quickChips: 'اقتراحات:',
+        secLinks: 'خانات الروابط والمنصات',
+        secLinksSub: 'تظهر البطاقة الأيقونة واسم التطبيق فقط مع زر النسخ السريع',
+        addLinkBtn: 'إضافة رابط',
+        secExport: 'محرك التوليد والتصدير الفوري',
+        secExportSub: 'اختر تصدير ملف HTML كامل مستقل لرفعه في أي مكان، أو توليد رابط سحابي مباشر فوري لمشاركته الآن.',
+        btnDownload: 'تحميل موقعك الجاهز (index.html)',
+        btnLiveLink: 'توليد رابط مشاركة مباشر',
+        livePreviewTitle: 'معاينة حية فورية ومباشرة (Real-time)',
+        phoneShare: 'مشاركة',
+        phoneSave: 'حفظ جهة اتصال',
+        tabEdit: 'تعديل',
+        tabPreview: 'المعاينة الحية',
+        modalTitle: 'رابط مشاركة بطاقتك المباشر',
+        modalSub: 'امسح الكود لفتح البطاقة فوراً أو انسخ الرابط أدناه:',
+        btnCopy: 'نسخ',
+        btnOpen: 'فتح الموقع في تبويب جديد'
+      },
+      en: {
+        dir: 'ltr',
+        tagline: 'Luxury Link-in-Bio Digital Business Card Builder Platform',
+        resetBtn: 'Reset',
+        secAvatar: 'Profile Picture',
+        useSampleImg: 'Sample Image',
+        dropText: 'Drag & drop your image here or browse',
+        dropSub: 'Auto-cropped, compressed and centered on face',
+        secIdentity: 'Identity & Bio Details',
+        lblSiteTitle: 'Browser Tab Title (Site Title)',
+        lblDisplayName: 'Display Name',
+        lblSlug: 'File Slug / ID (Site Slug)',
+        lblVerified: 'Blue Verified Badge',
+        lblVerifiedSub: 'Official vector verified mark',
+        lblBio: 'Bio / Description',
+        quickChips: 'Quick chips:',
+        secLinks: 'Links & Social Platforms',
+        secLinksSub: 'Cards show platform icon & title only with quick copy',
+        addLinkBtn: 'Add Link',
+        secExport: 'Dual Generation Engine',
+        secExportSub: 'Export a self-contained standalone HTML file or create an instant live shareable link.',
+        btnDownload: 'Download Website (index.html)',
+        btnLiveLink: 'Generate Live Share Link',
+        livePreviewTitle: 'Real-time Live Preview',
+        phoneShare: 'Share',
+        phoneSave: 'Save Contact',
+        tabEdit: 'Edit',
+        tabPreview: 'Live Preview',
+        modalTitle: 'Your Live Shareable Card Link',
+        modalSub: 'Scan the QR code or copy the direct link below:',
+        btnCopy: 'Copy',
+        btnOpen: 'Open in New Tab'
+      },
+      fr: {
+        dir: 'ltr',
+        tagline: 'Plateforme de création de cartes de visite digitales haut de gamme',
+        resetBtn: 'Réinitialiser',
+        secAvatar: 'Photo de profil',
+        useSampleImg: 'Image modèle',
+        dropText: 'Glissez-déposez votre image ici ou parcourez',
+        dropSub: 'Cadrage et compression automatiques centrés sur le visage',
+        secIdentity: 'Identité et Bio',
+        lblSiteTitle: "Titre de l'onglet (Site Title)",
+        lblDisplayName: 'Nom affiché (Display Name)',
+        lblSlug: 'Identifiant / Nom de fichier (Site Slug)',
+        lblVerified: 'Badge vérifié officiel',
+        lblVerifiedSub: 'Icône vectorielle officielle',
+        lblBio: 'Biographie / Description',
+        quickChips: 'Suggestions:',
+        secLinks: 'Plateformes et Liens',
+        secLinksSub: "La carte n'affiche que l'icône et le nom avec bouton copie",
+        addLinkBtn: 'Ajouter un lien',
+        secExport: 'Moteur de génération double',
+        secExportSub: 'Téléchargez un fichier HTML autonome ou générez un lien de partage en direct.',
+        btnDownload: 'Télécharger le site (index.html)',
+        btnLiveLink: 'Générer un lien direct',
+        livePreviewTitle: 'Aperçu en direct (Temps réel)',
+        phoneShare: 'Partager',
+        phoneSave: 'Enregistrer',
+        tabEdit: 'Modifier',
+        tabPreview: 'Aperçu Direct',
+        modalTitle: 'Lien direct de votre carte',
+        modalSub: 'Scannez le QR code ou copiez le lien ci-dessous:',
+        btnCopy: 'Copier',
+        btnOpen: 'Ouvrir dans un nouvel onglet'
+      }
+    };
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      const t = I18N[lang];
+      document.documentElement.setAttribute('dir', t.dir);
+      document.documentElement.setAttribute('lang', lang);
+
+      // Update UI active buttons
+      ['ar', 'en', 'fr'].forEach(l => {
+        const btn = document.getElementById(`lang-${l}`);
+        if (l === lang) {
+          btn.className = 'px-2.5 py-1 rounded-lg font-bold transition-all bg-cyan-500 text-black';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded-lg font-bold transition-all text-slate-400 hover:text-white';
+        }
+      });
+
+      // Update translated elements
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) el.textContent = t[key];
+      });
+    }
+
+    function toggleTheme() {
+      isDarkMode = !isDarkMode;
+      document.documentElement.classList.toggle('dark', isDarkMode);
+      document.documentElement.classList.toggle('light', !isDarkMode);
+      const icon = document.getElementById('themeIcon');
+      icon.className = isDarkMode ? 'fa-regular fa-sun text-sm' : 'fa-regular fa-moon text-sm';
+      initParticles();
+    }
+
+    function switchMobileTab(tab) {
+      const formCol = document.getElementById('formColumn');
+      const prevCol = document.getElementById('previewColumn');
+      const tabForm = document.getElementById('tabBtnForm');
+      const tabPrev = document.getElementById('tabBtnPreview');
+
+      if (tab === 'preview') {
+        formCol.classList.add('hidden');
+        prevCol.classList.remove('hidden');
+        tabPrev.className = 'px-4 py-2 rounded-full text-xs font-bold transition-all bg-cyan-500 text-black flex items-center gap-1.5';
+        tabForm.className = 'px-4 py-2 rounded-full text-xs font-bold transition-all text-slate-300 hover:text-white flex items-center gap-1.5';
+      } else {
+        formCol.classList.remove('hidden');
+        prevCol.classList.add('hidden');
+        tabForm.className = 'px-4 py-2 rounded-full text-xs font-bold transition-all bg-cyan-500 text-black flex items-center gap-1.5';
+        tabPrev.className = 'px-4 py-2 rounded-full text-xs font-bold transition-all text-slate-300 hover:text-white flex items-center gap-1.5';
+      }
+    }
+
+    function resetToTemplate() {
+      if (!confirm('هل تريد إعادة تعيين النموذج إلى البيانات الافتراضية؟')) return;
+      document.getElementById('inputSiteTitle').value = 'بكارة محمد عبد الجليل — بطاقة أعمال';
+      document.getElementById('inputDisplayName').value = 'بكارة محمد عبد الجليل';
+      document.getElementById('inputSlug').value = 'abdeljalil';
+      document.getElementById('inputVerified').checked = true;
+      document.getElementById('inputBio').value = 'مطور تطبيقات أندرويد ومواقع ويب | صانع محتوى تقني وأدوات ذكية';
+      currentAvatarBase64 = './avatar.png';
+      document.getElementById('formAvatarPreview').src = currentAvatarBase64;
+      document.getElementById('prevAvatar').src = currentAvatarBase64;
+
+      profileLinks = [
+        { id: 1, platform: 'tiktok', value: '@tlemceni.000', customTitle: 'TikTok' },
+        { id: 2, platform: 'instagram', value: '@abd_jalile013', customTitle: 'Instagram' },
+        { id: 3, platform: 'snapchat', value: 'abdjalile_13', customTitle: 'Snapchat' },
+        { id: 4, platform: 'whatsapp', value: '0659087568', customTitle: 'WhatsApp' },
+        { id: 5, platform: 'facebook', value: 'abd jalile tlm', customTitle: 'Facebook' },
+        { id: 6, platform: 'phone', value: '0659087568', customTitle: 'اتصال مباشر' },
+      ];
+
+      updateBioCounter();
+      renderFormLinks();
+      showToast('تمت استعادة القالب بنجاح');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]);
+    }
+    function escapeQuotes(str) {
+      return String(str || '').replace(/'/g, "\\'");
+    }
+
+    /* ======================================================
+       CANVAS PARTICLES BACKGROUND (GPU Friendly, Cap DPR 1.5)
+    ====================================================== */
+    let animId = null;
+    function initParticles() {
+      if (animId) cancelAnimationFrame(animId);
+      const canvas = document.getElementById('particles');
+      const ctx = canvas.getContext('2d');
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+
+      let W = (canvas.width = window.innerWidth * dpr);
+      let H = (canvas.height = window.innerHeight * dpr);
+
+      window.addEventListener('resize', () => {
+        W = canvas.width = window.innerWidth * dpr;
+        H = canvas.height = window.innerHeight * dpr;
+      });
+
+      const count = Math.min(40, Math.floor((window.innerWidth * window.innerHeight) / 22000));
+      const pts = [];
+
+      for (let i = 0; i < count; i++) {
+        pts.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.4 * dpr,
+          vy: (Math.random() - 0.5) * 0.4 * dpr,
+          r: (Math.random() * 1.6 + 0.8) * dpr,
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        const col = isDarkMode ? 'rgba(0, 242, 254, ' : 'rgba(79, 172, 254, ';
+
+        pts.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0) p.x = W;
+          if (p.x > W) p.x = 0;
+          if (p.y < 0) p.y = H;
+          if (p.y > H) p.y = 0;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = col + '0.5)';
+          ctx.fill();
+        });
+
+        for (let i = 0; i < pts.length; i++) {
+          for (let j = i + 1; j < pts.length; j++) {
+            const dx = pts[i].x - pts[j].x;
+            const dy = pts[i].y - pts[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 115 * dpr) {
+              const alpha = (1 - dist / (115 * dpr)) * 0.22;
+              ctx.beginPath();
+              ctx.moveTo(pts[i].x, pts[i].y);
+              ctx.lineTo(pts[j].x, pts[j].y);
+              ctx.strokeStyle = col + alpha + ')';
+              ctx.lineWidth = 1 * dpr;
+              ctx.stroke();
+            }
+          }
+        }
+        animId = requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    // Phone Clock live updater
+    function updatePhoneClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('phoneClock').textContent = `${h}:${m}`;
+    }
+
+    /* Initialize App */
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('inputSiteTitle').value = 'بكارة محمد عبد الجليل — بطاقة أعمال';
+      document.getElementById('inputDisplayName').value = 'بكارة محمد عبد الجليل';
+      document.getElementById('inputSlug').value = 'abdeljalil';
+      document.getElementById('inputBio').value = 'مطور تطبيقات أندرويد ومواقع ويب | صانع محتوى تقني وأدوات ذكية';
+      updateBioCounter();
+
+      renderFormLinks();
+      initParticles();
+      updatePhoneClock();
+      setInterval(updatePhoneClock, 30000);
+
+      // On mobile view, adjust default tabs
+      if (window.innerWidth < 1024) {
+        switchMobileTab('form');
+      }
+    });
+  </script>
+</body>
+</html>

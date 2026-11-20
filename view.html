@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="pageTitle">بطاقة رقمية شخصية</title>
+  <meta name="description" id="pageDesc" content="بطاقة الأعمال والرابط الموحد الرقمي" />
+
+  <!-- Google Fonts: Cairo, Tajawal, Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- FontAwesome 6.5.2 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <!-- QRCode.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- LZ-String for decompression -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            cairo: ['Cairo', 'sans-serif'],
+            tajawal: ['Tajawal', 'sans-serif'],
+            inter: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            obsidian: '#070b14',
+            surface: 'rgba(255, 255, 255, 0.04)',
+            cyanGlow: '#00f2fe',
+            purpleGlow: '#4facfe',
+            pinkGlow: '#fe0979',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg-primary: #070b14;
+      --bg-card: rgba(255, 255, 255, 0.04);
+      --border-card: rgba(255, 255, 255, 0.09);
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-cyan: #00f2fe;
+      --accent-purple: #4facfe;
+    }
+    .light {
+      --bg-primary: #f8fafc;
+      --bg-card: rgba(255, 255, 255, 0.85);
+      --border-card: rgba(0, 0, 0, 0.08);
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+    }
+    body {
+      font-family: 'Cairo', 'Tajawal', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    #particles {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+      animation: blobFloat 14s ease-in-out infinite alternate;
+      will-change: transform;
+    }
+    .blob-1 { width: 380px; height: 380px; background: #00f2fe; top: -100px; left: -100px; }
+    .blob-2 { width: 320px; height: 320px; background: #4facfe; bottom: -80px; right: -80px; animation-delay: 5s; }
+    @keyframes blobFloat {
+      0%   { transform: translate3d(0, 0, 0) scale(1); }
+      100% { transform: translate3d(28px, 36px, 0) scale(1.06); }
+    }
+    .glass {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-card);
+      will-change: transform;
+    }
+    .avatar-wrap {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 18px;
+    }
+    .avatar-ring-svg {
+      position: absolute;
+      inset: -8px;
+      animation: ringRotate 7s linear infinite;
+      will-change: transform;
+    }
+    @keyframes ringRotate {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    .avatar-circle {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid transparent;
+      background: linear-gradient(135deg, #070b14, #131c31);
+    }
+    .social-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      margin-bottom: 12px;
+      border-radius: 18px;
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border-card);
+      background: var(--bg-card);
+      transition: transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+      will-change: transform;
+    }
+    .social-card:hover {
+      transform: translate3d(0, -3px, 0);
+      border-color: rgba(0, 242, 254, 0.35);
+      box-shadow: 0 10px 25px -5px rgba(0, 242, 254, 0.12);
+    }
+    .social-icon-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .copy-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid var(--border-card);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      will-change: transform;
+    }
+    .copy-btn:hover {
+      color: var(--accent-cyan);
+      border-color: rgba(0, 242, 254, 0.4);
+      background: rgba(0, 242, 254, 0.1);
+      transform: scale(1.05);
+    }
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--border-card);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      transition: all 0.25s ease;
+      will-change: transform;
+    }
+    .action-btn:hover {
+      transform: translate3d(0, -2px, 0);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      box-shadow: 0 8px 20px rgba(0, 242, 254, 0.15);
+    }
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translate3d(-50%, 80px, 0);
+      background: rgba(7, 11, 20, 0.92);
+      border: 1px solid rgba(0, 242, 254, 0.35);
+      backdrop-filter: blur(12px);
+      padding: 12px 22px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #00f2fe;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
+      z-index: 100;
+      will-change: transform, opacity;
+    }
+    #toast.show {
+      transform: translate3d(-50%, 0, 0);
+      opacity: 1;
+    }
+    #qrModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 11, 20, 0.75);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 90;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    #qrModal.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .qr-box {
+      width: 90%;
+      max-width: 330px;
+      padding: 26px;
+      border-radius: 24px;
+      text-align: center;
+      transform: translate3d(0, 20px, 0);
+      transition: transform 0.3s cubic-bezier(0.34, 1.4, 0.64, 1);
+      will-change: transform;
+    }
+    #qrModal.show .qr-box {
+      transform: translate3d(0, 0, 0);
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center min-h-screen relative p-4 sm:p-6 pb-20">
+
+  <canvas id="particles"></canvas>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <!-- Top Builder Branding Bar -->
+  <header class="w-full max-w-md flex items-center justify-between mb-6 z-10">
+    <a href="index.html" class="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-cyan-400 transition-colors bg-white/5 border border-white/10 px-3.5 py-1.5 rounded-full backdrop-blur-md">
+      <i class="fa-solid fa-wand-magic-sparkles text-cyan-400"></i>
+      <span>اصنع بطاقتك مجاناً عبر BioCraft</span>
+    </a>
+    <button onclick="toggleTheme()" class="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-cyan-400 transition-colors" title="تبديل المظهر">
+      <i id="themeIcon" class="fa-regular fa-sun"></i>
+    </button>
+  </header>
+
+  <!-- Main Digital Profile Card -->
+  <main class="w-full max-w-md glass rounded-3xl p-6 sm:p-8 z-10 shadow-2xl relative">
+    
+    <!-- Profile Avatar & Rotating Glow Ring -->
+    <div class="flex flex-col items-center text-center">
+      <div class="avatar-wrap">
+        <svg class="avatar-ring-svg" width="126" height="126" viewBox="0 0 126 126">
+          <defs>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#00f2fe" />
+              <stop offset="50%" stop-color="#4facfe" />
+              <stop offset="100%" stop-color="#fe0979" />
+            </linearGradient>
+          </defs>
+          <circle cx="63" cy="63" r="59" fill="none" stroke="url(#ringGrad)" stroke-width="2.5" stroke-dasharray="270 90" stroke-linecap="round" />
+        </svg>
+        <div class="avatar-circle">
+          <img id="avatarImg" src="" alt="Avatar" class="w-full h-full object-cover object-[50%_20%] relative z-10" />
+        </div>
+      </div>
+
+      <!-- Display Name + Verified Badge -->
+      <h1 class="text-xl sm:text-2xl font-black text-slate-100 flex items-center justify-center gap-2 mb-1" id="displayNameWrap">
+        <span id="displayName">اسم المستخدم</span>
+        <span id="verifiedBadge" class="hidden text-sky-400 text-lg">
+          <svg class="w-5 h-5 inline-block fill-current" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.2 14.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.9-5.9 1.4 1.4-7.3 7.3z"/>
+          </svg>
+        </span>
+      </h1>
+
+      <!-- Bio / Description -->
+      <p id="displayBio" class="text-xs sm:text-sm text-slate-400 max-w-xs leading-relaxed mb-5 font-normal"></p>
+
+      <!-- Action Buttons Row -->
+      <div class="flex items-center justify-center gap-3 w-full mb-7">
+        <button onclick="shareProfile()" class="action-btn flex-1">
+          <i class="fa-solid fa-share-nodes"></i>
+          <span>مشاركة</span>
+        </button>
+        <button onclick="downloadVCard()" class="action-btn flex-1" id="vcardBtn">
+          <i class="fa-solid fa-user-plus"></i>
+          <span>حفظ جهة الاتصال</span>
+        </button>
+        <button onclick="openQRModal()" class="action-btn">
+          <i class="fa-solid fa-qrcode text-base"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Social Links Section -->
+    <div id="linksContainer" class="w-full flex flex-col">
+      <!-- Links rendered dynamically -->
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-8 pt-4 border-t border-white/5 text-center text-xs text-slate-500">
+      <p>&copy; <span id="currentYear"></span> <span id="footerBrand">BioCraft</span> — جميع الحقوق محفوظة</p>
+    </footer>
+  </main>
+
+  <!-- QR Code Modal -->
+  <div id="qrModal" onclick="closeQRModal(event)">
+    <div class="qr-box glass border border-white/10" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+          <i class="fa-solid fa-qrcode text-cyan-400"></i>
+          <span>رمز QR الخاص بالبطاقة</span>
+        </h3>
+        <button onclick="closeQRModal()" class="text-slate-400 hover:text-white transition-colors">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div id="qrCanvasWrap" class="p-4 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 w-[210px] h-[210px] shadow-lg"></div>
+      <p class="text-xs text-slate-400 mb-4">امسح الرمز بكاميرا الهاتف لفتح البطاقة فوراً</p>
+      <button onclick="copyProfileUrl()" class="w-full py-2.5 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 text-xs font-bold hover:bg-cyan-500/25 transition-all flex items-center justify-center gap-2">
+        <i class="fa-regular fa-copy"></i>
+        <span>نسخ رابط البطاقة</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Message -->
+  <div id="toast">
+    <i class="fa-solid fa-circle-check text-cyan-400"></i>
+    <span id="toastText">تم النسخ بنجاح!</span>
+  </div>
+
+  <script>
+    /* ==========================================
+       DATA LOADER & STATE
+    ========================================== */
+    let currentProfile = null;
+    let isDarkMode = true;
+
+    const PLATFORM_ICONS = {
+      tiktok: { icon: 'fa-brands fa-tiktok', bg: 'linear-gradient(135deg,#010101,#232323)', color: '#ffffff' },
+      instagram: { icon: 'fa-brands fa-instagram', bg: 'linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)', color: '#ffffff' },
+      snapchat: { icon: 'fa-brands fa-snapchat', bg: '#FFFC00', color: '#0a0f1d' },
+      whatsapp: { icon: 'fa-brands fa-whatsapp', bg: 'linear-gradient(135deg,#25D366,#128C7E)', color: '#ffffff' },
+      facebook: { icon: 'fa-brands fa-facebook-f', bg: 'linear-gradient(135deg,#1877F2,#0a4dbf)', color: '#ffffff' },
+      phone: { icon: 'fa-solid fa-phone-volume', bg: 'linear-gradient(135deg,#00f2fe,#4facfe)', color: '#070b14' },
+      youtube: { icon: 'fa-brands fa-youtube', bg: 'linear-gradient(135deg,#FF0000,#b30000)', color: '#ffffff' },
+      twitter: { icon: 'fa-brands fa-x-twitter', bg: '#000000', color: '#ffffff' },
+      telegram: { icon: 'fa-brands fa-telegram', bg: 'linear-gradient(135deg,#229ED9,#0088cc)', color: '#ffffff' },
+      linkedin: { icon: 'fa-brands fa-linkedin-in', bg: 'linear-gradient(135deg,#0077b5,#005582)', color: '#ffffff' },
+      website: { icon: 'fa-solid fa-globe', bg: 'linear-gradient(135deg,#6366f1,#4338ca)', color: '#ffffff' },
+    };
+
+    function loadProfileFromHash() {
+      const hash = window.location.hash.substring(1);
+      if (hash && window.LZString) {
+        try {
+          const jsonStr = LZString.decompressFromEncodedURIComponent(hash);
+          if (jsonStr) {
+            currentProfile = JSON.parse(jsonStr);
+          }
+        } catch (e) {
+          console.error('Failed to decompress profile hash:', e);
+        }
+      }
+
+      // Default demo profile if hash is empty or invalid
+      if (!currentProfile) {
+        currentProfile = {
+          title: "بطاقة شخصية تجريبية — BioCraft",
+          displayName: "بكارة محمد عبد الجليل",
+          verified: true,
+          bio: "مطور تطبيقات وويب | صانع محتوى تقني وأدوات ذكية",
+          avatar: "./avatar.png",
+          phone: "0659087568",
+          links: [
+            { platform: 'tiktok', title: 'TikTok', url: 'https://www.tiktok.com/@tlemceni.000', copyValue: '@tlemceni.000' },
+            { platform: 'instagram', title: 'Instagram', url: 'https://www.instagram.com/abd_jalile013', copyValue: '@abd_jalile013' },
+            { platform: 'snapchat', title: 'Snapchat', url: 'https://www.snapchat.com/add/abdjalile_13', copyValue: 'abdjalile_13' },
+            { platform: 'whatsapp', title: 'WhatsApp', url: 'https://wa.me/213659087568', copyValue: '0659087568' },
+            { platform: 'facebook', title: 'Facebook', url: 'https://www.facebook.com/search/top/?q=abd%20jalile%20tlm', copyValue: 'abd jalile tlm' },
+            { platform: 'phone', title: 'اتصال مباشر', url: 'tel:+213659087568', copyValue: '0659087568' },
+          ]
+        };
+      }
+
+      renderProfile();
+    }
+
+    function renderProfile() {
+      if (!currentProfile) return;
+
+      document.getElementById('pageTitle').textContent = currentProfile.title || currentProfile.displayName || 'بطاقة رقمية';
+      document.getElementById('displayName').textContent = currentProfile.displayName || 'الاسم';
+      
+      const badge = document.getElementById('verifiedBadge');
+      if (currentProfile.verified) {
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      const bioEl = document.getElementById('displayBio');
+      if (currentProfile.bio) {
+        bioEl.textContent = currentProfile.bio;
+        bioEl.classList.remove('hidden');
+      } else {
+        bioEl.classList.add('hidden');
+      }
+
+      const avatarEl = document.getElementById('avatarImg');
+      if (currentProfile.avatar) {
+        avatarEl.src = currentProfile.avatar;
+      } else {
+        avatarEl.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23070b14"/><circle cx="50" cy="40" r="22" fill="%234facfe"/><circle cx="50" cy="95" r="38" fill="%2300f2fe"/></svg>';
+      }
+
+      // Render links
+      const container = document.getElementById('linksContainer');
+      container.innerHTML = '';
+
+      (currentProfile.links || []).forEach(link => {
+        const conf = PLATFORM_ICONS[link.platform] || PLATFORM_ICONS.website;
+        const card = document.createElement('a');
+        card.href = link.url || '#';
+        card.target = '_blank';
+        card.rel = 'noopener noreferrer';
+        card.className = 'social-card';
+
+        card.innerHTML = `
+          <div class="social-icon-wrap" style="background:${conf.bg};color:${conf.color};">
+            <i class="${conf.icon}"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <span class="text-sm font-bold text-slate-100 block tracking-wide">${escapeHtml(link.title || link.platform)}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            ${link.copyValue ? `
+              <button class="copy-btn" onclick="copyCardValue(event, '${escapeQuotes(link.copyValue)}')" title="نسخ">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            ` : ''}
+            <i class="fa-solid fa-chevron-left text-xs text-slate-500"></i>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      document.getElementById('currentYear').textContent = new Date().getFullYear();
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]);
+    }
+    function escapeQuotes(str) {
+      return String(str || '').replace(/'/g, "\\'");
+    }
+
+    /* ==========================================
+       ACTIONS: COPY, SHARE, VCARD, QR
+    ========================================== */
+    function showToast(text) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastText').textContent = text;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    function copyCardValue(e, value) {
+      e.preventDefault();
+      e.stopPropagation();
+      navigator.clipboard.writeText(value).then(() => {
+        showToast('تم النسخ بنجاح!');
+      }).catch(() => {
+        showToast('تعذر النسخ تلقائياً');
+      });
+    }
+
+    function copyProfileUrl() {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        showToast('تم نسخ رابط البطاقة!');
+      });
+    }
+
+    function shareProfile() {
+      const shareUrl = window.location.href;
+      if (navigator.share) {
+        navigator.share({
+          title: currentProfile?.displayName || 'بطاقة أعمال',
+          text: currentProfile?.bio || 'شاهد بطاقتي الرقمية',
+          url: shareUrl,
+        }).catch(() => {});
+      } else {
+        copyProfileUrl();
+      }
+    }
+
+    function downloadVCard() {
+      if (!currentProfile) return;
+      const vcard = `BEGIN:VCARD
+VERSION:3.0
+FN:${currentProfile.displayName || 'بطاقة رقمية'}
+${currentProfile.phone ? `TEL:${currentProfile.phone}` : ''}
+URL:${window.location.href}
+NOTE:${currentProfile.bio || ''}
+END:VCARD`;
+
+      const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${(currentProfile.displayName || 'contact').replace(/\s+/g, '_')}.vcf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('جارٍ تنزيل جهة الاتصال...');
+    }
+
+    let qrBuilt = false;
+    function openQRModal() {
+      const modal = document.getElementById('qrModal');
+      modal.classList.add('show');
+      if (!qrBuilt) {
+        document.getElementById('qrCanvasWrap').innerHTML = '';
+        new QRCode(document.getElementById('qrCanvasWrap'), {
+          text: window.location.href,
+          width: 190,
+          height: 190,
+          colorDark: '#070b14',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.H,
+        });
+        qrBuilt = true;
+      }
+    }
+
+    function closeQRModal(e) {
+      if (!e || e.target === document.getElementById('qrModal') || e.currentTarget === e.target) {
+        document.getElementById('qrModal').classList.remove('show');
+      }
+    }
+
+    function toggleTheme() {
+      isDarkMode = !isDarkMode;
+      document.documentElement.classList.toggle('dark', isDarkMode);
+      document.documentElement.classList.toggle('light', !isDarkMode);
+      const icon = document.getElementById('themeIcon');
+      icon.className = isDarkMode ? 'fa-regular fa-sun' : 'fa-regular fa-moon';
+      initCanvas();
+    }
+
+    /* ==========================================
+       CANVAS PARTICLES (GPU Light, No shadowBlur)
+    ========================================== */
+    let animId = null;
+    function initCanvas() {
+      if (animId) cancelAnimationFrame(animId);
+      const canvas = document.getElementById('particles');
+      const ctx = canvas.getContext('2d');
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+
+      let W = (canvas.width = window.innerWidth * dpr);
+      let H = (canvas.height = window.innerHeight * dpr);
+
+      window.addEventListener('resize', () => {
+        W = canvas.width = window.innerWidth * dpr;
+        H = canvas.height = window.innerHeight * dpr;
+      });
+
+      const count = Math.min(45, Math.floor((window.innerWidth * window.innerHeight) / 20000));
+      const particles = [];
+
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.45 * dpr,
+          vy: (Math.random() - 0.5) * 0.45 * dpr,
+          r: (Math.random() * 1.5 + 0.8) * dpr,
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        const col = isDarkMode ? 'rgba(0, 242, 254, ' : 'rgba(79, 172, 254, ';
+
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0) p.x = W;
+          if (p.x > W) p.x = 0;
+          if (p.y < 0) p.y = H;
+          if (p.y > H) p.y = 0;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = col + '0.55)';
+          ctx.fill();
+        });
+
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 110 * dpr) {
+              const alpha = (1 - dist / (110 * dpr)) * 0.22;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = col + alpha + ')';
+              ctx.lineWidth = 1 * dpr;
+              ctx.stroke();
+            }
+          }
+        }
+        animId = requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      loadProfileFromHash();
+      initCanvas();
+    });
+    window.addEventListener('hashchange', loadProfileFromHash);
+  </script>
+</body>
+</html>
