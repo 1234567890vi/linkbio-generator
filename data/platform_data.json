@@ -1,0 +1,107 @@
+{
+  "sync_engine": "python_fastapi_hub",
+  "last_synced_at": "2026-11-21T20:20:11.210893",
+  "settings": {
+    "id": 1,
+    "maintenance_mode": 0,
+    "allow_new_sites": 1,
+    "announcement_text": "مرحباً بكم في منصة BioCraft — تم تفعيل نظام التحكم السحابي عبر خادم بايثون!",
+    "announcement_type": "info",
+    "default_theme": "obsidian",
+    "updated_at": "2026-11-21T20:19:44.268673"
+  },
+  "profiles": [
+    {
+      "id": "1",
+      "slug": "abdeljalil",
+      "site_title": "بكارة محمد عبد الجليل — بطاقة أعمال",
+      "display_name": "بكارة محمد عبد الجليل",
+      "bio": "مطور تطبيقات وويب | صانع محتوى تقني وأدوات ذكية",
+      "avatar_data": "./avatar.png",
+      "avatar_zoom": 1.0,
+      "avatar_pos_y": 20,
+      "theme": "obsidian",
+      "bg_style": "particles",
+      "verified": true,
+      "is_vip": true,
+      "vip_badge": "VIP CREATOR",
+      "is_active": true,
+      "links_json": [
+        {
+          "id": 1,
+          "platform": "tiktok",
+          "value": "@tlemceni.000",
+          "customTitle": "TikTok"
+        },
+        {
+          "id": 2,
+          "platform": "instagram",
+          "value": "@abd_jalile013",
+          "customTitle": "Instagram"
+        },
+        {
+          "id": 3,
+          "platform: ": "snapchat",
+          "value": "abdjalile_13",
+          "customTitle": "Snapchat"
+        },
+        {
+          "id": 4,
+          "platform": "whatsapp",
+          "value": "0659087568",
+          "customTitle": "WhatsApp"
+        },
+        {
+          "id": 5,
+          "platform": "facebook",
+          "value": "abd jalile tlm",
+          "customTitle": "Facebook"
+        },
+        {
+          "id": 6,
+          "platform": "phone",
+          "value": "0659087568",
+          "customTitle": "اتصال مباشر"
+        }
+      ],
+      "vcard_json": {
+        "enabled": true,
+        "phone": "0659087568",
+        "email": "",
+        "city": "الجزائر"
+      },
+      "views_count": 1420,
+      "created_at": "2026-11-21T20:19:44.276874",
+      "updated_at": "2026-11-21T20:19:44.276893"
+    }
+  ],
+  "vip_codes": [
+    {
+      "id": "3",
+      "code": "VIP-2026-DIAMOND",
+      "tier": "vip_pro",
+      "is_active": true,
+      "is_used": false,
+      "used_by_slug": null,
+      "created_at": "2026-11-21T20:19:44.277321"
+    },
+    {
+      "id": "2",
+      "code": "VIP-2026-ALPHA",
+      "tier": "vip_pro",
+      "is_active": true,
+      "is_used": false,
+      "used_by_slug": null,
+      "created_at": "2026-11-21T20:19:44.277313"
+    },
+    {
+      "id": "1",
+      "code": "VIP-2026-GOLD",
+      "tier": "vip_pro",
+      "is_active": true,
+      "is_used": true,
+      "used_by_slug": "abdeljalil",
+      "created_at": "2026-11-21T20:19:44.277302"
+    }
+  ]
+}

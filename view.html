@@ -495,7 +495,67 @@
         }
       }
 
-      // 2. Fallback to LZ-String URL hash
+      // 2. Check Synced Platform Data (from Python Hub & GitHub)
+      try {
+        let platformData = null;
+        try {
+          const pyRes = await fetch('http://127.0.0.1:8000/api/dashboard/overview', { signal: AbortSignal.timeout(600) });
+          if (pyRes.ok) {
+            const pyJson = await pyRes.json();
+            platformData = { profiles: pyJson.profiles, settings: pyJson.settings };
+          }
+        } catch (e) {}
+
+        if (!platformData) {
+          const fRes = await fetch(`./data/platform_data.json?t=${Date.now()}`);
+          if (fRes.ok) {
+            platformData = await fRes.json();
+          }
+        }
+
+        if (platformData) {
+          if (platformData.settings && platformData.settings.maintenance_mode) {
+            document.getElementById('profileCardMain').classList.add('hidden');
+            document.getElementById('deactivatedCard').classList.remove('hidden');
+            document.getElementById('deactivatedCard').querySelector('h2').textContent = 'المنصة في وضع الصيانة';
+            document.getElementById('deactivatedCard').querySelector('p').textContent = 'نعمل حالياً على تحديثات وتطويرات هامة. سنعود قريباً!';
+            return;
+          }
+
+          const targetSlug = slug || 'abdeljalil';
+          const matchProfile = (platformData.profiles || []).find(p => p.slug === targetSlug);
+          if (matchProfile) {
+            if (!matchProfile.is_active) {
+              document.getElementById('profileCardMain').classList.add('hidden');
+              document.getElementById('deactivatedCard').classList.remove('hidden');
+              return;
+            }
+
+            currentProfile = {
+              title: matchProfile.site_title,
+              displayName: matchProfile.display_name,
+              verified: Boolean(matchProfile.verified),
+              is_vip: Boolean(matchProfile.is_vip),
+              vipBadge: matchProfile.vip_badge || 'VIP CREATOR',
+              bio: matchProfile.bio,
+              avatar: matchProfile.avatar_data,
+              avatarZoom: matchProfile.avatar_zoom || 1.0,
+              avatarPosY: matchProfile.avatar_pos_y !== undefined ? matchProfile.avatar_pos_y : 20,
+              theme: matchProfile.theme || 'obsidian',
+              bgStyle: matchProfile.bg_style || 'particles',
+              links: Array.isArray(matchProfile.links_json) ? matchProfile.links_json : [],
+              vcard: matchProfile.vcard_json || {},
+              viewsCount: matchProfile.views_count || 0
+            };
+            renderProfile();
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('[BioCraft] Platform data check:', e);
+      }
+
+      // 3. Fallback to LZ-String URL hash
       loadProfileFromHash();
     }
 

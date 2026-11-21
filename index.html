@@ -2198,26 +2198,56 @@
        CHECK PLATFORM SETTINGS (Announcements / Maintenance)
     ====================================================== */
     async function checkPlatformSettings() {
-      const client = getSupabaseClient();
-      if (!client) return;
+      let settings = null;
 
+      // 1. فحص خادم بايثون المحلي
       try {
-        const { data } = await client
-          .from('platform_settings')
-          .select('*')
-          .eq('id', 1)
-          .maybeSingle();
-
-        if (data) {
-          if (data.maintenance_mode) {
-            document.getElementById('maintenanceBanner').classList.remove('hidden');
-          }
-          if (data.announcement_text) {
-            document.getElementById('announcementText').textContent = data.announcement_text;
-            document.getElementById('announcementBanner').classList.remove('hidden');
-          }
+        const pyRes = await fetch('http://127.0.0.1:8000/api/dashboard/overview', { signal: AbortSignal.timeout(600) });
+        if (pyRes.ok) {
+          const pyData = await pyRes.json();
+          settings = pyData.settings;
         }
       } catch (e) {}
+
+      // 2. فحص ملف البيانات المتزامن
+      if (!settings) {
+        try {
+          const fRes = await fetch(`./data/platform_data.json?t=${Date.now()}`);
+          if (fRes.ok) {
+            const fData = await fRes.json();
+            settings = fData.settings;
+          }
+        } catch (e) {}
+      }
+
+      // 3. فحص سحابة Supabase
+      if (!settings) {
+        const client = getSupabaseClient();
+        if (client) {
+          try {
+            const { data } = await client.from('platform_settings').select('*').eq('id', 1).maybeSingle();
+            if (data) settings = data;
+          } catch (e) {}
+        }
+      }
+
+      if (settings) {
+        if (settings.maintenance_mode) {
+          document.getElementById('maintenanceBanner').classList.remove('hidden');
+        }
+        if (settings.announcement_text) {
+          document.getElementById('announcementText').textContent = settings.announcement_text;
+          document.getElementById('announcementBanner').classList.remove('hidden');
+        }
+        if (settings.allow_new_sites === false) {
+          const genBtn = document.getElementById('btnGenerateSite');
+          if (genBtn) {
+            genBtn.disabled = true;
+            genBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            genBtn.title = 'تم إيقاف إنشاء مواقع جديدة مؤقتاً بأمر الإدارة';
+          }
+        }
+      }
     }
 
     /* ======================================================
