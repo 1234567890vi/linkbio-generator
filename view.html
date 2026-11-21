@@ -444,7 +444,8 @@
       }
 
       // أ. التحقق المباشر من خادم بايثون السحابي (Python Remote Control API)
-      const apiBase = (typeof PYTHON_API_URL !== 'undefined' && PYTHON_API_URL) ? PYTHON_API_URL : 'https://virgin-they-hose-musician.trycloudflare.com';
+      const savedUrl = (typeof localStorage !== 'undefined') ? localStorage.getItem('biocraft_backend_url') : null;
+      const apiBase = (typeof PYTHON_API_URL !== 'undefined' && PYTHON_API_URL) ? PYTHON_API_URL : (savedUrl || 'https://biocraft-backend-hub.onrender.com');
 
       // فحص إعدادات المنصة (وضع الصيانة)
       try {

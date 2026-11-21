@@ -1,6 +1,6 @@
 {
   "sync_engine": "python_fastapi_hub",
-  "last_synced_at": "2026-11-21T21:20:48.234860",
+  "last_synced_at": "2026-11-21T21:56:21.903375",
   "settings": {
     "id": 1,
     "maintenance_mode": 0,
@@ -70,7 +70,7 @@
         "email": "",
         "city": "الجزائر"
       },
-      "views_count": 1420,
+      "views_count": 1422,
       "created_at": "2026-11-21T21:19:40.524790",
       "updated_at": "2026-11-21T21:19:40.524828"
     }

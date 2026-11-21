@@ -1635,7 +1635,8 @@
     async function generateLiveShareLink() {
       const data = getSiteData();
       let liveUrl = '';
-      const pyBase = (typeof PYTHON_API_URL !== 'undefined' && PYTHON_API_URL) ? PYTHON_API_URL : 'https://virgin-they-hose-musician.trycloudflare.com';
+      const savedUrl = (typeof localStorage !== 'undefined') ? localStorage.getItem('biocraft_backend_url') : null;
+      const pyBase = (typeof PYTHON_API_URL !== 'undefined' && PYTHON_API_URL) ? PYTHON_API_URL : (savedUrl || 'https://biocraft-backend-hub.onrender.com');
 
       // 1. الحفظ المباشر في قاعدة بيانات خادم بايثون (Real Database Save via HTTPS API)
       if (data.slug) {
@@ -2241,7 +2242,8 @@
 
       // 1. فحص خادم بايثون السحابي (HTTPS Python Hub)
       try {
-        const pyBase = (typeof PYTHON_API_URL !== 'undefined' && PYTHON_API_URL) ? PYTHON_API_URL : 'https://virgin-they-hose-musician.trycloudflare.com';
+        const savedUrl = (typeof localStorage !== 'undefined') ? localStorage.getItem('biocraft_backend_url') : null;
+      const pyBase = (typeof PYTHON_API_URL !== 'undefined' && PYTHON_API_URL) ? PYTHON_API_URL : (savedUrl || 'https://biocraft-backend-hub.onrender.com');
         const pyRes = await fetch(`${pyBase}/api/settings`, { signal: AbortSignal.timeout(1500) });
         if (pyRes.ok) {
           settings = await pyRes.json();
