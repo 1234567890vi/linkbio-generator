@@ -4,7 +4,7 @@
  * ====================================================================
  * رابط خادم بايثون السحابي المشفر (HTTPS) للتحكم المباشر والمزامنة
  */
-const PYTHON_API_URL = "https://evening-achievements-stanford-organizing.trycloudflare.com";
+const PYTHON_API_URL = "https://virgin-they-hose-musician.trycloudflare.com";
 const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT.supabase.co";
 const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 const PUBLIC_PLATFORM_URL = "https://1234567890vi.github.io/linkbio-generator";
