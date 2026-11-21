@@ -1,9 +1,10 @@
 /**
  * ====================================================================
- *   BioCraft Platform — Supabase Master Client Configuration
+ *   BioCraft Platform — Central Configuration & Backend Connector
  * ====================================================================
- * ضع هنا رابط مشروعك ومفتاح anon من لوحة تحكم Supabase (Project Settings -> API)
+ * رابط خادم بايثون السحابي المشفر (HTTPS) للتحكم المباشر والمزامنة
  */
+const PYTHON_API_URL = "https://evening-achievements-stanford-organizing.trycloudflare.com";
 const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT.supabase.co";
 const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 const PUBLIC_PLATFORM_URL = "https://1234567890vi.github.io/linkbio-generator";

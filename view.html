@@ -435,7 +435,7 @@
     };
 
     async function initProfile() {
-      // 1. Check if slug query exists (?slug=xyz or pathname /u/xyz)
+      // 1. استخراج slug من الرابط (?slug=xyz أو مسار /u/xyz)
       const urlParams = new URLSearchParams(window.location.search);
       let slug = urlParams.get('slug');
       if (!slug && window.location.pathname.includes('/u/')) {
@@ -443,8 +443,67 @@
         if (parts[1]) slug = parts[1].replace(/\/$/, '');
       }
 
-      const client = getSupabaseClient();
+      // أ. التحقق المباشر من خادم بايثون السحابي (Python Remote Control API)
+      const apiBase = (typeof PYTHON_API_URL !== 'undefined' && PYTHON_API_URL) ? PYTHON_API_URL : 'https://evening-achievements-stanford-organizing.trycloudflare.com';
 
+      // فحص إعدادات المنصة (وضع الصيانة)
+      try {
+        const sRes = await fetch(`${apiBase}/api/settings`, { signal: AbortSignal.timeout(2000) });
+        if (sRes.ok) {
+          const settings = await sRes.json();
+          if (settings.maintenance_mode) {
+            document.getElementById('profileCardMain').classList.add('hidden');
+            document.getElementById('deactivatedCard').classList.remove('hidden');
+            document.getElementById('deactivatedCard').querySelector('h2').textContent = 'المنصة في وضع الصيانة';
+            document.getElementById('deactivatedCard').querySelector('p').textContent = 'نعمل حالياً على تحديثات وتطويرات هامة. سنعود قريباً!';
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('[BioCraft] Settings check notice:', e);
+      }
+
+      // جلب بيانات الموقع الحقيقية عبر slug من قاعدة بيانات خادم بايثون
+      if (slug) {
+        try {
+          const pRes = await fetch(`${apiBase}/api/profiles/${encodeURIComponent(slug)}`, { signal: AbortSignal.timeout(3000) });
+          if (pRes.ok) {
+            const data = await pRes.json();
+            if (!data.is_active) {
+              document.getElementById('profileCardMain').classList.add('hidden');
+              document.getElementById('deactivatedCard').classList.remove('hidden');
+              document.getElementById('deactivatedCard').querySelector('h2').textContent = 'هذا الموقع معطّل حالياً من قِبل الإدارة';
+              document.getElementById('deactivatedCard').querySelector('p').textContent = 'تم إيقاف هذا الرابط من قِبل إدارة المنصة. يرجى التواصل مع الإدارة لإعادة تفعيله.';
+              return;
+            }
+
+            currentProfile = {
+              title: data.site_title || data.display_name,
+              displayName: data.display_name,
+              verified: Boolean(data.verified),
+              is_vip: Boolean(data.is_vip),
+              vipBadge: data.vip_badge || 'VIP CREATOR',
+              bio: data.bio || '',
+              avatar: data.avatar_data || '',
+              avatarZoom: data.avatar_zoom || 1.0,
+              avatarPosY: data.avatar_pos_y !== undefined ? data.avatar_pos_y : 20,
+              theme: data.theme || 'obsidian',
+              bgStyle: data.bg_style || 'particles',
+              links: Array.isArray(data.links_json) ? data.links_json : [],
+              vcard: data.vcard_json || {},
+              viewsCount: data.views_count || 0
+            };
+
+            renderProfile();
+            return;
+          }
+        } catch (e) {
+          console.warn('[BioCraft] Python Hub profile fetch error:', e);
+        }
+      }
+
+      // ب. التحقق من Supabase إذا كان مهيأ
+      const client = getSupabaseClient();
       if (slug && client) {
         try {
           const { data, error } = await client
@@ -457,6 +516,7 @@
             if (!data.is_active) {
               document.getElementById('profileCardMain').classList.add('hidden');
               document.getElementById('deactivatedCard').classList.remove('hidden');
+              document.getElementById('deactivatedCard').querySelector('h2').textContent = 'هذا الموقع معطّل حالياً من قِبل الإدارة';
               return;
             }
 
@@ -477,16 +537,6 @@
               viewsCount: data.views_count || 0
             };
 
-            // Increment views via RPC function
-            try {
-              const { data: newViews } = await client.rpc('increment_site_views', { p_slug: slug });
-              if (newViews !== null && newViews !== undefined) {
-                currentProfile.viewsCount = newViews;
-              }
-            } catch (rpcErr) {
-              console.warn('[BioCraft] Views increment:', rpcErr);
-            }
-
             renderProfile();
             return;
           }
@@ -495,25 +545,11 @@
         }
       }
 
-      // 2. Check Synced Platform Data (from Python Hub & GitHub)
+      // ج. فحص ملف البيانات المتزامن محلياً على GitHub (platform_data.json)
       try {
-        let platformData = null;
-        try {
-          const pyRes = await fetch('http://127.0.0.1:8000/api/dashboard/overview', { signal: AbortSignal.timeout(600) });
-          if (pyRes.ok) {
-            const pyJson = await pyRes.json();
-            platformData = { profiles: pyJson.profiles, settings: pyJson.settings };
-          }
-        } catch (e) {}
-
-        if (!platformData) {
-          const fRes = await fetch(`./data/platform_data.json?t=${Date.now()}`);
-          if (fRes.ok) {
-            platformData = await fRes.json();
-          }
-        }
-
-        if (platformData) {
+        const fRes = await fetch(`./data/platform_data.json?t=${Date.now()}`);
+        if (fRes.ok) {
+          const platformData = await fRes.json();
           if (platformData.settings && platformData.settings.maintenance_mode) {
             document.getElementById('profileCardMain').classList.add('hidden');
             document.getElementById('deactivatedCard').classList.remove('hidden');
@@ -528,6 +564,7 @@
             if (!matchProfile.is_active) {
               document.getElementById('profileCardMain').classList.add('hidden');
               document.getElementById('deactivatedCard').classList.remove('hidden');
+              document.getElementById('deactivatedCard').querySelector('h2').textContent = 'هذا الموقع معطّل حالياً من قِبل الإدارة';
               return;
             }
 
@@ -552,11 +589,12 @@
           }
         }
       } catch (e) {
-        console.warn('[BioCraft] Platform data check:', e);
+        console.warn('[BioCraft] Synced platform data check:', e);
       }
 
-      // 3. Fallback to LZ-String URL hash
+      // د. استرجاع البيانات من الهاش المشفر (LZ-String URL hash fallback)
       loadProfileFromHash();
+    }
     }
 
     function loadProfileFromHash() {
